@@ -15,9 +15,9 @@ jobs:
         with:
           dotnet-version: '8.0.x'
       - name: Restore
-        run: dotnet restore src/backend/Cipso.Registry.Api/Cipso.Registry.Api.csproj
-      - name: Build
-        run: dotnet build src/backend/Cipso.Registry.Api/Cipso.Registry.Api.csproj --no-restore --configuration Release
+        run: dotnet restore tests/Cipso.Registry.Api.Tests/Cipso.Registry.Api.Tests.csproj
+      - name: Test
+        run: dotnet test tests/Cipso.Registry.Api.Tests/Cipso.Registry.Api.Tests.csproj --configuration Release --no-restore --verbosity normal
 
   frontend:
     runs-on: ubuntu-latest

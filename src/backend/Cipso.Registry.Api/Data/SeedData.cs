@@ -7,7 +7,6 @@ public static class SeedData
 {
     public static async Task InitializeAsync(AppDbContext db)
     {
-        await db.Database.EnsureCreatedAsync();
         if (await db.AuthorityOffices.AnyAsync()) return;
 
         var office = new AuthorityOffice
@@ -57,6 +56,7 @@ public static class SeedData
             Status = SummonsStatus.Issued,
             Comment = "Синтетические данные"
         };
+
         summons.StatusHistory.Add(new SummonsStatusHistory
         {
             FromStatus = SummonsStatus.Draft,

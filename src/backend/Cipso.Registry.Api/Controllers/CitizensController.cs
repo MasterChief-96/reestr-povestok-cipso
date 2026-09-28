@@ -1,12 +1,14 @@
 using Cipso.Registry.Api.Contracts;
 using Cipso.Registry.Api.Data;
 using Cipso.Registry.Api.Domain;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Cipso.Registry.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/citizens")]
 public sealed class CitizensController(AppDbContext db) : ControllerBase
 {
@@ -14,17 +16,26 @@ public sealed class CitizensController(AppDbContext db) : ControllerBase
     public async Task<IActionResult> GetAll([FromQuery] string? search)
     {
         var query = db.Citizens.Include(x => x.Address).AsNoTracking();
+
         if (!string.IsNullOrWhiteSpace(search))
         {
             var s = search.Trim().ToLower();
-            query = query.Where(x => x.RegistryNumber.ToLower().Contains(s)
-                || x.LastName.ToLower().Contains(s)
-                || x.FirstName.ToLower().Contains(s));
+            query = query.Where(x =>
+                x.RegistryNumber.ToLower().Contains(s) ||
+                x.LastName.ToLower().Contains(s) ||
+                x.FirstName.ToLower().Contains(s));
         }
-        var items = await query.OrderBy(x => x.LastName).Take(100).ToListAsync();
+
+        var items = await query
+            .OrderBy(x => x.LastName)
+            .ThenBy(x => x.FirstName)
+            .Take(100)
+            .ToListAsync();
+
         return Ok(items);
     }
 
+    [Authorize(Roles = "Operator,Manager")]
     [HttpPost]
     public async Task<IActionResult> Create(CreateCitizenRequest request)
     {
@@ -50,8 +61,10 @@ public sealed class CitizensController(AppDbContext db) : ControllerBase
                 Apartment = request.Address.Apartment?.Trim()
             }
         };
+
         db.Citizens.Add(citizen);
         await db.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetAll), new { id = citizen.Id }, citizen);
+
+        return Created($"/api/citizens/{citizen.Id}", citizen);
     }
 }

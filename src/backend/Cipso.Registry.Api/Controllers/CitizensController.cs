@@ -9,14 +9,17 @@ using Microsoft.EntityFrameworkCore;
 namespace Cipso.Registry.Api.Controllers;
 
 [ApiController]
-[Authorize(Roles = "Operator,Manager,Observer")]
+[Authorize(Roles = "Operator,Manager,Observer,AutomationEngineer")]
 [Route("api/citizens")]
 public sealed class CitizensController(AppDbContext db) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] string? search)
     {
-        var query = db.Citizens.Include(x => x.Address).AsNoTracking();
+        var query = db.Citizens
+            .Include(x => x.Address)
+            .AsNoTracking()
+            .Where(x => !x.IsWrittenOff);
 
         if (User.IsObserver())
         {
@@ -76,5 +79,31 @@ public sealed class CitizensController(AppDbContext db) : ControllerBase
         await db.SaveChangesAsync();
 
         return Created($"/api/citizens/{citizen.Id}", citizen);
+    }
+
+    [Authorize(Roles = "Operator,Manager,AutomationEngineer")]
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> WriteOff(Guid id)
+    {
+        var citizen = await db.Citizens.FirstOrDefaultAsync(x => x.Id == id);
+        if (citizen is null)
+            return NotFound(new { message = "Призывник не найден." });
+
+        if (citizen.IsWrittenOff)
+            return NoContent();
+
+        citizen.IsWrittenOff = true;
+        citizen.WrittenOffAt = DateTimeOffset.UtcNow;
+        citizen.WrittenOffBy = User.Identity?.Name ?? "system";
+
+        var linkedAccounts = await db.SystemAccounts
+            .Where(x => x.CitizenRegistryNumber == citizen.RegistryNumber && x.IsActive)
+            .ToListAsync();
+
+        foreach (var account in linkedAccounts)
+            account.IsActive = false;
+
+        await db.SaveChangesAsync();
+        return NoContent();
     }
 }

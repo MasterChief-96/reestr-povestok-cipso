@@ -26,7 +26,9 @@ public sealed class DocumentsController(AppDbContext db) : ControllerBase
             if (string.IsNullOrWhiteSpace(registryNumber))
                 return Forbid();
 
-            query = query.Where(x => x.Summons.Citizen.RegistryNumber == registryNumber);
+            query = query.Where(x =>
+                x.Summons.Citizen.RegistryNumber == registryNumber &&
+                !x.Summons.Citizen.IsWrittenOff);
         }
 
         var items = await query

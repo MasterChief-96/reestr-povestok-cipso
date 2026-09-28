@@ -36,7 +36,9 @@ public sealed class SummonsController(AppDbContext db, SummonsService service) :
             if (string.IsNullOrWhiteSpace(registryNumber))
                 return Forbid();
 
-            query = query.Where(x => x.Citizen.RegistryNumber == registryNumber);
+            query = query.Where(x =>
+                x.Citizen.RegistryNumber == registryNumber &&
+                !x.Citizen.IsWrittenOff);
         }
 
         if (status is not null)
@@ -116,7 +118,9 @@ public sealed class SummonsController(AppDbContext db, SummonsService service) :
             .AsNoTracking();
 
         if (User.IsObserver())
-            query = query.Where(x => x.Citizen.RegistryNumber == registryNumber);
+            query = query.Where(x =>
+                x.Citizen.RegistryNumber == registryNumber &&
+                !x.Citizen.IsWrittenOff);
 
         var item = await query.FirstOrDefaultAsync(x => x.Id == id);
 

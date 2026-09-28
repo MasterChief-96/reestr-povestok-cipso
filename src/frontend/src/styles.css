@@ -493,3 +493,94 @@ td small, .detail-grid small, .timeline small, .compact-row small {
 @media (max-width: 850px) {
   .account-choice, .provider-actions, .accounts-grid { grid-template-columns: 1fr; }
 }
+
+
+.danger {
+  border: 1px solid #e4b8b8;
+  background: #fff2f2;
+  color: #9b3d3d;
+  border-radius: 8px;
+  padding: 8px 11px;
+  font-weight: 700;
+}
+.danger:hover { background: #fde7e7; }
+
+.account-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.latest-summons-hero {
+  display: block;
+  margin-bottom: 18px;
+  padding: 26px 28px;
+  border-radius: 16px;
+  background: #202d44;
+  color: white;
+  text-decoration: none;
+  box-shadow: 0 14px 34px rgba(24, 34, 53, .16);
+}
+.latest-summons-hero:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 40px rgba(24, 34, 53, .2);
+}
+.latest-summons-hero .badge {
+  font-size: 13px;
+  padding: 7px 10px;
+}
+.latest-summons-hero-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+}
+.latest-summons-hero-head > div { display: grid; gap: 5px; }
+.latest-summons-label {
+  color: #b8c5d8;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-weight: 700;
+}
+.latest-summons-hero-head strong {
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.1;
+}
+.latest-summons-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 24px;
+}
+.latest-summons-grid > div {
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px;
+  padding: 14px;
+  display: grid;
+  gap: 6px;
+}
+.latest-summons-grid span {
+  color: #aebbd0;
+  font-size: 12px;
+}
+.latest-summons-grid strong {
+  color: white;
+  font-size: 16px;
+}
+.latest-summons-reason { grid-column: 1 / -1; }
+.latest-summons-open {
+  margin-top: 18px;
+  color: #dce5f2;
+  font-weight: 700;
+}
+
+@media (max-width: 650px) {
+  .latest-summons-hero { padding: 20px; }
+  .latest-summons-hero-head { flex-direction: column; }
+  .latest-summons-grid { grid-template-columns: 1fr; }
+  .latest-summons-reason { grid-column: 1; }
+}

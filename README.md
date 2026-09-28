@@ -12,7 +12,7 @@
 - Backend: ASP.NET Core 8 Web API
 - ORM: Entity Framework Core 8
 - DB: PostgreSQL 16
-- API docs: Swagger / OpenAPI
+- API dоcs: Swagger / OpenAPI
 - DevOps: Docker Compose, Nginx
 - Диаграммы и проектная документация: Markdown + Mermaid
 

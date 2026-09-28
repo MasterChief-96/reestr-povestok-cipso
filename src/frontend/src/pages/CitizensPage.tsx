@@ -10,7 +10,7 @@ export function CitizensPage() {
   useEffect(() => {
     void getCitizens()
       .then(setCitizens)
-      .catch(e => setError(e instanceof Error ? e.message : 'Не удалось загрузить граждан'));
+      .catch(e => setError(e instanceof Error ? e.message : 'Не удалось загрузить призывников'));
   }, []);
 
   const filtered = useMemo(() => {
@@ -29,7 +29,7 @@ export function CitizensPage() {
       <header className="topbar">
         <div>
           <p className="eyebrow">Справочник</p>
-          <h1>Граждане</h1>
+          <h1>Призывники</h1>
         </div>
         <span className="environment">{citizens.length} записей</span>
       </header>
@@ -37,8 +37,8 @@ export function CitizensPage() {
       <section className="panel">
         <div className="panel-head">
           <div>
-            <h2>Учебные адресаты</h2>
-            <p>Все записи являются синтетическими и предназначены только для демонстрации.</p>
+            <h2>Учётные карточки призывников</h2>
+            <p>Все персональные данные синтетические и используются только в учебном контуре.</p>
           </div>
         </div>
 
@@ -60,7 +60,7 @@ export function CitizensPage() {
                 <th>ФИО</th>
                 <th>Дата рождения</th>
                 <th>Контакты</th>
-                <th>Учебный адрес</th>
+                <th>Адрес регистрации</th>
               </tr>
             </thead>
             <tbody>

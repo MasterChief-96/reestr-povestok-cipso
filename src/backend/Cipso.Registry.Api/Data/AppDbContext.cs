@@ -16,6 +16,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<Appeal> Appeals => Set<Appeal>();
     public DbSet<Document> Documents => Set<Document>();
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
+    public DbSet<SystemAccount> SystemAccounts => Set<SystemAccount>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -23,6 +24,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         modelBuilder.Entity<AuthorityOffice>().HasIndex(x => x.Code).IsUnique();
         modelBuilder.Entity<Employee>().HasIndex(x => x.PersonnelNumber).IsUnique();
         modelBuilder.Entity<Summons>().HasIndex(x => x.Number).IsUnique();
+        modelBuilder.Entity<SystemAccount>().HasIndex(x => x.ExternalSubject).IsUnique();
 
         modelBuilder.Entity<Citizen>()
             .HasOne(x => x.Address)

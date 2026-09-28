@@ -19,7 +19,7 @@ export function AppealsPage() {
       <header className="topbar">
         <div>
           <p className="eyebrow">Связанные данные</p>
-          <h1>Обращения</h1>
+          <h1>Обращения призывников</h1>
         </div>
         <span className="environment">{items.length} записей</span>
       </header>
@@ -27,8 +27,8 @@ export function AppealsPage() {
       <section className="panel">
         <div className="panel-head">
           <div>
-            <h2>Обращения по повесткам</h2>
-            <p>Демонстрационные обращения, связанные с записями реестра.</p>
+            <h2>Обращения и уточнения по повесткам</h2>
+            <p>Учебные обращения по срокам явки, сведениям воинского учёта и содержанию повестки.</p>
           </div>
         </div>
 
@@ -40,7 +40,7 @@ export function AppealsPage() {
               <tr>
                 <th>Дата</th>
                 <th>Тип</th>
-                <th>Адресат</th>
+                <th>Призывник</th>
                 <th>Повестка</th>
                 <th>Текст</th>
                 <th>Статус обращения</th>

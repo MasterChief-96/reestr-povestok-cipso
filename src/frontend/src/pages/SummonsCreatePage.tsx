@@ -18,8 +18,8 @@ export function SummonsCreatePage({ session }: { session: Session }) {
   const [officeId, setOfficeId] = useState('');
   const [issuedAt, setIssuedAt] = useState(today);
   const [dueAt, setDueAt] = useState(`${today}T12:00`);
-  const [reason, setReason] = useState('Учебное оповещение');
-  const [comment, setComment] = useState('Синтетические данные');
+  const [reason, setReason] = useState('Явка в военный комиссариат для уточнения документов воинского учёта');
+  const [comment, setComment] = useState('Синтетическая запись учебного реестра повесток военного учёта');
 
   useEffect(() => {
     void Promise.all([getCitizens(), getOffices()])
@@ -37,7 +37,7 @@ export function SummonsCreatePage({ session }: { session: Session }) {
     return (
       <section className="panel access-panel">
         <h1>Недостаточно прав</h1>
-        <p>Роль Observer может только просматривать данные.</p>
+        <p>Призывник может просматривать данные, но не создавать повестки.</p>
         <Link to="/summons" className="secondary button-link">Вернуться в реестр</Link>
       </section>
     );
@@ -50,7 +50,7 @@ export function SummonsCreatePage({ session }: { session: Session }) {
     event.preventDefault();
 
     if (!employee) {
-      setError('У выбранного подразделения нет сотрудника для создания записи.');
+      setError('У выбранного военкомата нет секретаря для создания записи.');
       return;
     }
 
@@ -81,7 +81,7 @@ export function SummonsCreatePage({ session }: { session: Session }) {
       <header className="topbar">
         <div>
           <p className="eyebrow">Реестр / новая запись</p>
-          <h1>Создание повестки</h1>
+          <h1>Создание повестки военного учёта</h1>
         </div>
         <Link className="secondary button-link" to="/summons">Отмена</Link>
       </header>
@@ -97,7 +97,7 @@ export function SummonsCreatePage({ session }: { session: Session }) {
             </label>
 
             <label>
-              Адресат
+              Призывник
               <select required value={citizenId} onChange={e => setCitizenId(e.target.value)}>
                 {citizens.map(citizen => (
                   <option key={citizen.id} value={citizen.id}>
@@ -108,7 +108,7 @@ export function SummonsCreatePage({ session }: { session: Session }) {
             </label>
 
             <label>
-              Подразделение
+              Военкомат
               <select required value={officeId} onChange={e => setOfficeId(e.target.value)}>
                 {offices.map(item => (
                   <option key={item.id} value={item.id}>{item.name}</option>
@@ -117,7 +117,7 @@ export function SummonsCreatePage({ session }: { session: Session }) {
             </label>
 
             <label>
-              Дата выпуска
+              Дата формирования
               <input
                 type="date"
                 required
@@ -127,7 +127,7 @@ export function SummonsCreatePage({ session }: { session: Session }) {
             </label>
 
             <label>
-              Срок
+              Срок явки
               <input
                 type="datetime-local"
                 required
@@ -137,7 +137,7 @@ export function SummonsCreatePage({ session }: { session: Session }) {
             </label>
 
             <label className="full">
-              Основание
+              Основание / причина явки
               <textarea required rows={4} value={reason} onChange={e => setReason(e.target.value)} />
             </label>
 

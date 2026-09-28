@@ -1,13 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
+import { roleLabels } from '../constants';
 import type { Session } from '../types';
-
-const navItems = [
-  { to: '/dashboard', label: 'Сводка' },
-  { to: '/summons', label: 'Реестр повесток' },
-  { to: '/citizens', label: 'Граждане' },
-  { to: '/appeals', label: 'Обращения' },
-  { to: '/documents', label: 'Документы' }
-];
 
 export function Layout({
   session,
@@ -16,11 +9,23 @@ export function Layout({
   session: Session;
   onLogout: () => void;
 }) {
+  const militaryNav = [
+    { to: '/dashboard', label: 'Сводка' },
+    { to: '/summons', label: 'Реестр повесток' },
+    { to: '/citizens', label: 'Призывники' },
+    { to: '/appeals', label: 'Обращения' },
+    { to: '/documents', label: 'Документы' }
+  ];
+
+  const navItems = session.role === 'AutomationEngineer'
+    ? [{ to: '/accounts', label: 'Учётные записи' }]
+    : militaryNav;
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand">ЦИПСО</div>
-        <div className="brand-subtitle">Реестр повесток</div>
+        <div className="brand-subtitle">Повестки военного учёта</div>
 
         <nav className="sidebar-nav">
           {navItems.map(item => (
@@ -39,16 +44,17 @@ export function Layout({
 
         <div className="sidebar-user">
           <strong>{session.displayName}</strong>
-          <span>{session.role}</span>
+          <span>{roleLabels[session.role]}</span>
+          <small>Вход: {session.provider === 'MAX' ? 'MAX' : 'Госуслуги / Госключ'} (заглушка)</small>
           <button onClick={onLogout}>Выйти</button>
         </div>
-        <div className="demo-note">Учебный контур · синтетические данные</div>
+        <div className="demo-note">Учебный проект · только синтетические данные</div>
       </aside>
 
       <div className="mobile-bar">
-        <strong>ЦИПСО</strong>
+        <strong>ЦИПСО · воинский учёт</strong>
         <nav>
-          {navItems.slice(0, 5).map(item => (
+          {navItems.map(item => (
             <NavLink
               key={item.to}
               to={item.to}

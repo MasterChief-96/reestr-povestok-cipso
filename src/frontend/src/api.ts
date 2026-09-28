@@ -1,5 +1,6 @@
 import type {
   AppealListItem,
+  AuthProvider,
   Citizen,
   CreateSummonsPayload,
   DashboardSummary,
@@ -7,8 +8,11 @@ import type {
   Office,
   PagedSummons,
   Session,
+  StubAccount,
   SummonsDetail,
-  SummonsFilters
+  SummonsFilters,
+  SystemAccount,
+  UserRole
 } from './types';
 
 export const SESSION_KEY = 'cipso.session';
@@ -16,7 +20,6 @@ export const SESSION_KEY = 'cipso.session';
 export function readSession(): Session | null {
   const raw = localStorage.getItem(SESSION_KEY);
   if (!raw) return null;
-
   try {
     const session = JSON.parse(raw) as Session;
     if (new Date(session.expiresAt).getTime() <= Date.now()) {
@@ -31,16 +34,11 @@ export function readSession(): Session | null {
 
 async function apiFetch<T>(path: string, init: RequestInit = {}, authenticated = true): Promise<T> {
   const headers = new Headers(init.headers);
-
-  if (init.body && !headers.has('Content-Type')) {
-    headers.set('Content-Type', 'application/json');
-  }
+  if (init.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
 
   if (authenticated) {
     const session = readSession();
-    if (session?.token) {
-      headers.set('Authorization', `Bearer ${session.token}`);
-    }
+    if (session?.token) headers.set('Authorization', `Bearer ${session.token}`);
   }
 
   const response = await fetch(path, { ...init, headers });
@@ -48,7 +46,7 @@ async function apiFetch<T>(path: string, init: RequestInit = {}, authenticated =
   if (response.status === 401) {
     localStorage.removeItem(SESSION_KEY);
     window.dispatchEvent(new Event('cipso:unauthorized'));
-    throw new Error('Сессия истекла. Войдите снова.');
+    throw new Error('Сессия истекла. Выполните вход через MAX или Госуслуги снова.');
   }
 
   if (!response.ok) {
@@ -56,24 +54,38 @@ async function apiFetch<T>(path: string, init: RequestInit = {}, authenticated =
     try {
       const body = await response.json() as { message?: string; title?: string };
       message = body.message ?? body.title ?? message;
-    } catch {
-      // Response does not contain JSON.
-    }
+    } catch {}
     throw new Error(message);
   }
 
-  if (response.status === 204) {
-    return undefined as T;
-  }
-
+  if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
 }
 
-export async function login(username: string, password: string): Promise<Session> {
-  return apiFetch<Session>('/api/auth/login', {
+export async function getStubAccounts(): Promise<StubAccount[]> {
+  return apiFetch<StubAccount[]>('/api/auth/stub/accounts', {}, false);
+}
+
+export async function externalStubLogin(provider: AuthProvider, accountId: string): Promise<Session> {
+  return apiFetch<Session>('/api/auth/stub/external', {
     method: 'POST',
-    body: JSON.stringify({ username, password })
+    body: JSON.stringify({ provider, accountId })
   }, false);
+}
+
+export async function getAccounts(): Promise<SystemAccount[]> {
+  return apiFetch<SystemAccount[]>('/api/accounts');
+}
+
+export async function createAccount(payload: {
+  displayName: string;
+  role: UserRole;
+  citizenRegistryNumber?: string;
+}): Promise<SystemAccount> {
+  return apiFetch<SystemAccount>('/api/accounts', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
 }
 
 export async function getDashboard(): Promise<DashboardSummary> {
@@ -87,7 +99,6 @@ export async function getSummons(filters: SummonsFilters): Promise<PagedSummons>
   if (filters.officeId) params.set('officeId', filters.officeId);
   params.set('page', String(filters.page ?? 1));
   params.set('pageSize', String(filters.pageSize ?? 10));
-
   return apiFetch<PagedSummons>(`/api/summons?${params.toString()}`);
 }
 

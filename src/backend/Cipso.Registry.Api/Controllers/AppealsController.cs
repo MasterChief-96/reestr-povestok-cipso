@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Cipso.Registry.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Operator,Manager,Observer")]
 [Route("api/appeals")]
 public sealed class AppealsController(AppDbContext db) : ControllerBase
 {

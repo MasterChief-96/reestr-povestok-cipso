@@ -30,7 +30,7 @@ export function DashboardPage() {
       <header className="topbar">
         <div>
           <p className="eyebrow">Сводка</p>
-          <h1>Панель состояния реестра</h1>
+          <h1>Сводка по воинскому учёту</h1>
         </div>
         <Link className="primary button-link" to="/summons">Открыть реестр</Link>
       </header>
@@ -40,7 +40,7 @@ export function DashboardPage() {
         <article><span>Активные</span><strong>{data.active}</strong></article>
         <article><span>Завершенные</span><strong>{data.completed}</strong></article>
         <article><span>Отмененные</span><strong>{data.cancelled}</strong></article>
-        <article><span>Граждане</span><strong>{data.citizens}</strong></article>
+        <article><span>Призывники</span><strong>{data.citizens}</strong></article>
         <article><span>Обращения</span><strong>{data.appeals}</strong></article>
         <article><span>Документы</span><strong>{data.documents}</strong></article>
       </section>
@@ -50,7 +50,7 @@ export function DashboardPage() {
           <div className="panel-head">
             <div>
               <h2>По статусам</h2>
-              <p>Распределение записей во всей базе.</p>
+              <p>Распределение повесток военного учёта по статусам.</p>
             </div>
           </div>
           <div className="status-list">
@@ -68,7 +68,7 @@ export function DashboardPage() {
           <div className="panel-head">
             <div>
               <h2>Последние повестки</h2>
-              <p>Пять последних записей по дате выпуска.</p>
+              <p>Пять последних повесток по дате формирования.</p>
             </div>
           </div>
           <div className="compact-list">

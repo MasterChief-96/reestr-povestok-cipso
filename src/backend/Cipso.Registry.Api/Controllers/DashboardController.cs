@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Cipso.Registry.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Operator,Manager,Observer")]
 [Route("api/dashboard")]
 public sealed class DashboardController(AppDbContext db) : ControllerBase
 {

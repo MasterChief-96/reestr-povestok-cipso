@@ -13,7 +13,7 @@
 - ORM: Entity Framework Core 8 + migrations
 - DB: PostgreSQL 16
 - Auth: JWT + роли Operator / Manager / Observer
-- API docs: Swagger / OpenAPI
+- API dоcs: Swagger / OpenAPI
 - DevOps: Docker Compose, Nginx, GitHub Actions
 - Тесты: xUnit + EF Core InMemory
 - Диаграммы и проектная документация: Markdown + Mermaid

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Cipso.Registry.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Operator,Manager,Observer")]
 [Route("api/documents")]
 public sealed class DocumentsController(AppDbContext db) : ControllerBase
 {

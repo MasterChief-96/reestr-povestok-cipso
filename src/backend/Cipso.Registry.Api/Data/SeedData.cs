@@ -156,10 +156,11 @@ public static class SeedData
         IReadOnlyList<AuthorityOffice> offices,
         IReadOnlyList<Citizen> citizens)
     {
-        var existingNumbers = await db.Summonses
+        var existingNumberList = await db.Summonses
             .Where(x => x.Number.StartsWith("CIPSO-2026-"))
             .Select(x => x.Number)
-            .ToHashSetAsync();
+            .ToListAsync();
+        var existingNumbers = existingNumberList.ToHashSet(StringComparer.Ordinal);
 
         var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
 

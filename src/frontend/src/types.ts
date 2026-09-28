@@ -1,12 +1,27 @@
-export type UserRole = 'Operator' | 'Manager' | 'Observer';
+export type UserRole = 'Operator' | 'Manager' | 'Observer' | 'AutomationEngineer';
+export type AuthProvider = 'MAX' | 'Gosuslugi';
 export type SummonsStatus = 'Draft' | 'Issued' | 'Delivered' | 'Acknowledged' | 'Completed' | 'Cancelled';
 
 export interface Session {
   token: string;
-  username: string;
+  accountId: string;
   displayName: string;
   role: UserRole;
+  provider: AuthProvider;
   expiresAt: string;
+}
+
+export interface StubAccount {
+  id: string;
+  displayName: string;
+  role: UserRole;
+  citizenRegistryNumber?: string | null;
+}
+
+export interface SystemAccount extends StubAccount {
+  externalSubject: string;
+  isActive: boolean;
+  createdAt: string;
 }
 
 export interface Citizen {
@@ -50,17 +65,8 @@ export interface SummonsListItem {
   issuedAt: string;
   dueAt: string;
   reason?: string;
-  citizen: {
-    id: string;
-    registryNumber: string;
-    lastName: string;
-    firstName: string;
-  };
-  office: {
-    id: string;
-    code: string;
-    name: string;
-  };
+  citizen: { id: string; registryNumber: string; lastName: string; firstName: string };
+  office: { id: string; code: string; name: string };
 }
 
 export interface PagedSummons {
@@ -104,27 +110,9 @@ export interface SummonsDetail {
       providerMessage?: string | null;
     }>;
   }>;
-  appeals: Array<{
-    id: string;
-    type: string;
-    text: string;
-    status: string;
-    submittedAt: string;
-  }>;
-  documents: Array<{
-    id: string;
-    fileName: string;
-    mimeType: string;
-    storageUri: string;
-    createdAt: string;
-  }>;
-  auditEvents: Array<{
-    id: string;
-    action: string;
-    actor: string;
-    occurredAt: string;
-    details?: string | null;
-  }>;
+  appeals: Array<{ id: string; type: string; text: string; status: string; submittedAt: string }>;
+  documents: Array<{ id: string; fileName: string; mimeType: string; storageUri: string; createdAt: string }>;
+  auditEvents: Array<{ id: string; action: string; actor: string; occurredAt: string; details?: string | null }>;
 }
 
 export interface SummonsFilters {
@@ -164,17 +152,8 @@ export interface AppealListItem {
   text: string;
   status: string;
   submittedAt: string;
-  summons: {
-    id: string;
-    number: string;
-    status: SummonsStatus;
-  };
-  citizen: {
-    id: string;
-    registryNumber: string;
-    lastName: string;
-    firstName: string;
-  };
+  summons: { id: string; number: string; status: SummonsStatus };
+  citizen: { id: string; registryNumber: string; lastName: string; firstName: string };
 }
 
 export interface DocumentListItem {
@@ -183,15 +162,6 @@ export interface DocumentListItem {
   mimeType: string;
   storageUri: string;
   createdAt: string;
-  summons: {
-    id: string;
-    number: string;
-    status: SummonsStatus;
-  };
-  citizen: {
-    id: string;
-    registryNumber: string;
-    lastName: string;
-    firstName: string;
-  };
+  summons: { id: string; number: string; status: SummonsStatus };
+  citizen: { id: string; registryNumber: string; lastName: string; firstName: string };
 }

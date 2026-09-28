@@ -17,9 +17,19 @@ export function Layout({
     { to: '/documents', label: 'Документы' }
   ];
 
+  const observerNav = [
+    { to: '/dashboard', label: 'Моя сводка' },
+    { to: '/summons', label: 'Мои повестки' },
+    { to: '/citizens', label: 'Мои данные' },
+    { to: '/appeals', label: 'Мои обращения' },
+    { to: '/documents', label: 'Мои документы' }
+  ];
+
   const navItems = session.role === 'AutomationEngineer'
     ? [{ to: '/accounts', label: 'Учётные записи' }]
-    : militaryNav;
+    : session.role === 'Observer'
+      ? observerNav
+      : militaryNav;
 
   return (
     <div className="app-shell">
@@ -37,9 +47,11 @@ export function Layout({
               {item.label}
             </NavLink>
           ))}
-          <a className="nav-item" href="/swagger" target="_blank" rel="noreferrer">
-            Swagger API
-          </a>
+          {session.role !== 'Observer' && (
+            <a className="nav-item" href="/swagger" target="_blank" rel="noreferrer">
+              Swagger API
+            </a>
+          )}
         </nav>
 
         <div className="sidebar-user">
@@ -48,7 +60,11 @@ export function Layout({
           <small>Вход: {session.provider === 'MAX' ? 'MAX' : 'Госуслуги / Госключ'} (заглушка)</small>
           <button onClick={onLogout}>Выйти</button>
         </div>
-        <div className="demo-note">Учебный проект · только синтетические данные</div>
+        <div className="demo-note">
+          {session.role === 'Observer'
+            ? 'Доступ ограничен только вашими данными'
+            : 'Учебный проект · только синтетические данные'}
+        </div>
       </aside>
 
       <div className="mobile-bar">

@@ -44,14 +44,53 @@ public sealed class AccountsController(AppDbContext db) : ControllerBase
         if (string.IsNullOrWhiteSpace(displayName))
             return BadRequest(new { message = "Отображаемое имя обязательно." });
 
-        var registryNumber = string.IsNullOrWhiteSpace(request.CitizenRegistryNumber)
-            ? null
-            : request.CitizenRegistryNumber.Trim();
+        await using var transaction = await db.Database.BeginTransactionAsync();
 
-        if (role == "Observer" && registryNumber is not null &&
-            !await db.Citizens.AnyAsync(x => x.RegistryNumber == registryNumber))
+        Citizen? citizen = null;
+        string? registryNumber = null;
+
+        if (role == "Observer")
         {
-            return BadRequest(new { message = "Призывник с таким реестровым номером не найден." });
+            if (request.Citizen is null)
+            {
+                return BadRequest(new
+                {
+                    message = "Для роли «Призывник» необходимо заполнить карточку призывника."
+                });
+            }
+
+            registryNumber = request.Citizen.RegistryNumber.Trim();
+
+            if (string.IsNullOrWhiteSpace(registryNumber))
+                return BadRequest(new { message = "Реестровый номер призывника обязателен." });
+
+            if (await db.Citizens.AnyAsync(x => x.RegistryNumber == registryNumber))
+                return Conflict(new { message = "Призывник с таким реестровым номером уже существует." });
+
+            if (await db.SystemAccounts.AnyAsync(x => x.CitizenRegistryNumber == registryNumber))
+                return Conflict(new { message = "Для этого призывника уже существует учётная запись." });
+
+            citizen = new Citizen
+            {
+                RegistryNumber = registryNumber,
+                LastName = request.Citizen.LastName.Trim(),
+                FirstName = request.Citizen.FirstName.Trim(),
+                MiddleName = request.Citizen.MiddleName?.Trim(),
+                BirthDate = request.Citizen.BirthDate,
+                Email = request.Citizen.Email?.Trim(),
+                Phone = request.Citizen.Phone?.Trim(),
+                Address = new Address
+                {
+                    PostalCode = request.Citizen.Address.PostalCode.Trim(),
+                    Region = request.Citizen.Address.Region.Trim(),
+                    City = request.Citizen.Address.City.Trim(),
+                    Street = request.Citizen.Address.Street.Trim(),
+                    Building = request.Citizen.Address.Building.Trim(),
+                    Apartment = request.Citizen.Address.Apartment?.Trim()
+                }
+            };
+
+            db.Citizens.Add(citizen);
         }
 
         var account = new SystemAccount
@@ -65,6 +104,7 @@ public sealed class AccountsController(AppDbContext db) : ControllerBase
 
         db.SystemAccounts.Add(account);
         await db.SaveChangesAsync();
+        await transaction.CommitAsync();
 
         return Created($"/api/accounts/{account.Id}", account);
     }

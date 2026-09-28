@@ -23,4 +23,4 @@ public sealed record LoginResponse(
 public sealed record CreateSystemAccountRequest(
     [Required] string DisplayName,
     [Required] string Role,
-    string? CitizenRegistryNumber);
+    CreateCitizenRequest? Citizen);

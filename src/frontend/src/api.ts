@@ -80,7 +80,23 @@ export async function getAccounts(): Promise<SystemAccount[]> {
 export async function createAccount(payload: {
   displayName: string;
   role: UserRole;
-  citizenRegistryNumber?: string;
+  citizen?: {
+    registryNumber: string;
+    lastName: string;
+    firstName: string;
+    middleName?: string;
+    birthDate: string;
+    email?: string;
+    phone?: string;
+    address: {
+      postalCode: string;
+      region: string;
+      city: string;
+      street: string;
+      building: string;
+      apartment?: string;
+    };
+  };
 }): Promise<SystemAccount> {
   return apiFetch<SystemAccount>('/api/accounts', {
     method: 'POST',

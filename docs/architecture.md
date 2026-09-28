@@ -4,47 +4,64 @@
 
 ```mermaid
 flowchart LR
-    User[Оператор / Руководитель] --> UI[React SPA]
-    UI -->|REST/JSON| API[ASP.NET Core Web API]
+    User[Секретарь / Комиссар / Призывник] --> UI[React SPA]
+    Engineer[Инженер автоматизации] --> UI
+    UI -->|mock external auth| MAX[MAX заглушка]
+    UI -->|mock external auth| GOS[Госуслуги / Госключ заглушка]
+    MAX --> API[ASP.NET Core Web API]
+    GOS --> API
+    UI -->|JWT Bearer + REST/JSON| API
     API --> EF[Entity Framework Core]
     EF --> DB[(PostgreSQL)]
-    API --> Notify[Mock notification provider]
+    API --> Notify[Mock SMS/e-mail provider]
 ```
+
+В реальной целевой схеме MAX и Госуслуги/«Госключ» являются внешними провайдерами аутентификации. В учебной версии их сетевые интеграции **не реализованы**: UI вызывает локальный mock endpoint, который имитирует успешный результат внешней аутентификации и получает JWT.
 
 ## Компоненты
 
 ```mermaid
 flowchart TB
     subgraph Frontend
-      Pages[Pages / Components]
+      Login[External auth stub page]
+      Registry[Military summons pages]
+      Accounts[Account administration]
       Client[API client]
-      Pages --> Client
+      Login --> Client
+      Registry --> Client
+      Accounts --> Client
     end
 
     subgraph Backend
-      Controllers[Controllers]
+      Auth[AuthController]
+      Controllers[Military registry controllers]
+      AccountCtrl[AccountsController]
+      Token[JwtTokenService]
       Services[Application services]
-      Data[DbContext]
+      Data[AppDbContext]
       Domain[Domain entities]
+      Auth --> Token
       Controllers --> Services
+      AccountCtrl --> Data
       Services --> Data
       Data --> Domain
     end
 
+    Client --> Auth
     Client --> Controllers
+    Client --> AccountCtrl
     Data --> PostgreSQL[(PostgreSQL)]
 ```
 
-## Почему такой стек
+## Ролевой доступ
 
-- ASP.NET Core и EF Core дают явную объектную модель и удобны для демонстрации принципов ООП.
-- PostgreSQL подходит для связной предметной области с транзакциями и ограничениями целостности.
-- React + TypeScript обеспечивает независимый frontend и хорошо документируемые контракты.
-- Docker Compose минимизирует различия окружения и упрощает запуск на Linux.
+- Operator / Секретарь — рабочие операции реестра;
+- Manager / Комиссар — рабочие операции + контроль/аудит;
+- Observer / Призывник — чтение;
+- AutomationEngineer — создание системных учётных записей.
 
-## Расширяемость
+## Данные
 
-- `Notification` и `DeliveryAttempt` позволяют подключать разные каналы без изменения сущности повестки.
-- статус отделен от истории статусов, поэтому можно строить timeline и аудит.
-- документы представлены отдельной сущностью, что позволяет позже вынести бинарное хранилище в S3-совместимый сервис.
-- authentication/authorization может быть добавлена через ASP.NET Core Identity и JWT.
+В БД сохраняются призывники, адреса, военкоматы, сотрудники, повестки, история статусов, уведомления, попытки доставки, обращения, документы, audit events и системные учётные записи.
+
+Все seed-данные синтетические.

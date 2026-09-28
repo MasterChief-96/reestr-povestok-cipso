@@ -45,11 +45,11 @@ export default function App() {
               <Route path="/accounts" element={<AccountsPage />} />
             ) : (
               <>
-                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/dashboard" element={<DashboardPage session={session} />} />
                 <Route path="/summons" element={<SummonsListPage session={session} />} />
                 <Route path="/summons/new" element={<SummonsCreatePage session={session} />} />
                 <Route path="/summons/:id" element={<SummonsDetailPage session={session} />} />
-                <Route path="/citizens" element={<CitizensPage />} />
+                <Route path="/citizens" element={<CitizensPage session={session} />} />
                 <Route path="/appeals" element={<AppealsPage />} />
                 <Route path="/documents" element={<DocumentsPage />} />
               </>

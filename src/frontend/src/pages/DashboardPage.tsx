@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import { getDashboard } from '../api';
 import { StatusBadge } from '../components/StatusBadge';
 import { statusLabels } from '../constants';
-import type { DashboardSummary, SummonsStatus } from '../types';
+import type { DashboardSummary, Session, SummonsStatus } from '../types';
 
-export function DashboardPage() {
+export function DashboardPage({ session }: { session: Session }) {
   const [data, setData] = useState<DashboardSummary | null>(null);
   const [error, setError] = useState('');
 
@@ -15,34 +15,32 @@ export function DashboardPage() {
       .catch(e => setError(e instanceof Error ? e.message : 'Не удалось загрузить сводку'));
   }, []);
 
-  if (error) {
-    return <div className="error">{error}</div>;
-  }
-
-  if (!data) {
-    return <div className="state">Загрузка сводки…</div>;
-  }
+  if (error) return <div className="error">{error}</div>;
+  if (!data) return <div className="state">Загрузка сводки…</div>;
 
   const statusEntries = Object.entries(data.byStatus) as Array<[SummonsStatus, number]>;
+  const observer = session.role === 'Observer';
 
   return (
     <>
       <header className="topbar">
         <div>
-          <p className="eyebrow">Сводка</p>
-          <h1>Сводка по воинскому учёту</h1>
+          <p className="eyebrow">{observer ? 'Личный кабинет' : 'Сводка'}</p>
+          <h1>{observer ? 'Моя сводка' : 'Сводка по воинскому учёту'}</h1>
         </div>
-        <Link className="primary button-link" to="/summons">Открыть реестр</Link>
+        <Link className="primary button-link" to="/summons">
+          {observer ? 'Мои повестки' : 'Открыть реестр'}
+        </Link>
       </header>
 
       <section className="stats stats-wide">
-        <article><span>Всего повесток</span><strong>{data.total}</strong></article>
+        <article><span>{observer ? 'Мои повестки' : 'Всего повесток'}</span><strong>{data.total}</strong></article>
         <article><span>Активные</span><strong>{data.active}</strong></article>
         <article><span>Завершенные</span><strong>{data.completed}</strong></article>
         <article><span>Отмененные</span><strong>{data.cancelled}</strong></article>
-        <article><span>Призывники</span><strong>{data.citizens}</strong></article>
-        <article><span>Обращения</span><strong>{data.appeals}</strong></article>
-        <article><span>Документы</span><strong>{data.documents}</strong></article>
+        <article><span>{observer ? 'Моя карточка' : 'Призывники'}</span><strong>{data.citizens}</strong></article>
+        <article><span>{observer ? 'Мои обращения' : 'Обращения'}</span><strong>{data.appeals}</strong></article>
+        <article><span>{observer ? 'Мои документы' : 'Документы'}</span><strong>{data.documents}</strong></article>
       </section>
 
       <div className="dashboard-grid">
@@ -50,7 +48,7 @@ export function DashboardPage() {
           <div className="panel-head">
             <div>
               <h2>По статусам</h2>
-              <p>Распределение повесток военного учёта по статусам.</p>
+              <p>{observer ? 'Распределение только ваших повесток.' : 'Распределение повесток военного учёта по статусам.'}</p>
             </div>
           </div>
           <div className="status-list">
@@ -67,8 +65,8 @@ export function DashboardPage() {
         <section className="panel">
           <div className="panel-head">
             <div>
-              <h2>Последние повестки</h2>
-              <p>Пять последних повесток по дате формирования.</p>
+              <h2>{observer ? 'Мои последние повестки' : 'Последние повестки'}</h2>
+              <p>{observer ? 'Отображаются только повестки вашей учётной карточки.' : 'Пять последних повесток по дате формирования.'}</p>
             </div>
           </div>
           <div className="compact-list">
@@ -81,6 +79,7 @@ export function DashboardPage() {
                 <StatusBadge status={item.status} />
               </Link>
             ))}
+            {!data.recent.length && <div className="state">Повесток пока нет</div>}
           </div>
         </section>
       </div>

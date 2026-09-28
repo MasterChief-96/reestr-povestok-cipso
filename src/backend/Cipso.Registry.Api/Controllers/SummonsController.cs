@@ -1,3 +1,4 @@
+using Cipso.Registry.Api.Auth;
 using Cipso.Registry.Api.Contracts;
 using Cipso.Registry.Api.Data;
 using Cipso.Registry.Api.Domain;
@@ -28,6 +29,15 @@ public sealed class SummonsController(AppDbContext db, SummonsService service) :
             .Include(x => x.Citizen)
             .Include(x => x.AuthorityOffice)
             .AsNoTracking();
+
+        if (User.IsObserver())
+        {
+            var registryNumber = User.GetCitizenRegistryNumber();
+            if (string.IsNullOrWhiteSpace(registryNumber))
+                return Forbid();
+
+            query = query.Where(x => x.Citizen.RegistryNumber == registryNumber);
+        }
 
         if (status is not null)
             query = query.Where(x => x.Status == status);
@@ -87,7 +97,14 @@ public sealed class SummonsController(AppDbContext db, SummonsService service) :
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var item = await db.Summonses
+        var registryNumber = User.IsObserver()
+            ? User.GetCitizenRegistryNumber()
+            : null;
+
+        if (User.IsObserver() && string.IsNullOrWhiteSpace(registryNumber))
+            return Forbid();
+
+        var query = db.Summonses
             .Include(x => x.Citizen).ThenInclude(x => x.Address)
             .Include(x => x.AuthorityOffice)
             .Include(x => x.CreatedByEmployee)
@@ -96,8 +113,12 @@ public sealed class SummonsController(AppDbContext db, SummonsService service) :
             .Include(x => x.Appeals)
             .Include(x => x.Documents)
             .Include(x => x.AuditEvents)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .AsNoTracking();
+
+        if (User.IsObserver())
+            query = query.Where(x => x.Citizen.RegistryNumber == registryNumber);
+
+        var item = await query.FirstOrDefaultAsync(x => x.Id == id);
 
         return item is null ? NotFound() : Ok(item);
     }

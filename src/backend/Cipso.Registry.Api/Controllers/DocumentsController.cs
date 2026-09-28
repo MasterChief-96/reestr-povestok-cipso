@@ -1,3 +1,4 @@
+using Cipso.Registry.Api.Auth;
 using Cipso.Registry.Api.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,10 +14,22 @@ public sealed class DocumentsController(AppDbContext db) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var items = await db.Documents
+        var query = db.Documents
             .AsNoTracking()
             .Include(x => x.Summons)
             .ThenInclude(x => x.Citizen)
+            .AsQueryable();
+
+        if (User.IsObserver())
+        {
+            var registryNumber = User.GetCitizenRegistryNumber();
+            if (string.IsNullOrWhiteSpace(registryNumber))
+                return Forbid();
+
+            query = query.Where(x => x.Summons.Citizen.RegistryNumber == registryNumber);
+        }
+
+        var items = await query
             .OrderByDescending(x => x.CreatedAt)
             .Take(200)
             .Select(x => new

@@ -1,3 +1,4 @@
+using Cipso.Registry.Api.Auth;
 using Cipso.Registry.Api.Contracts;
 using Cipso.Registry.Api.Data;
 using Cipso.Registry.Api.Domain;
@@ -16,6 +17,15 @@ public sealed class CitizensController(AppDbContext db) : ControllerBase
     public async Task<IActionResult> GetAll([FromQuery] string? search)
     {
         var query = db.Citizens.Include(x => x.Address).AsNoTracking();
+
+        if (User.IsObserver())
+        {
+            var registryNumber = User.GetCitizenRegistryNumber();
+            if (string.IsNullOrWhiteSpace(registryNumber))
+                return Forbid();
+
+            query = query.Where(x => x.RegistryNumber == registryNumber);
+        }
 
         if (!string.IsNullOrWhiteSpace(search))
         {

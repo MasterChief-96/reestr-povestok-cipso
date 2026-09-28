@@ -70,7 +70,7 @@ export function SummonsListPage({ session }: { session: Session }) {
       <header className="topbar">
         <div>
           <p className="eyebrow">Реестр</p>
-          <h1>Электронные повестки</h1>
+          <h1>Повестки военного учёта</h1>
         </div>
         <div className="top-actions">
           <span className="environment">{data.total} записей</span>
@@ -83,7 +83,7 @@ export function SummonsListPage({ session }: { session: Session }) {
       <section className="panel">
         <div className="panel-head">
           <div>
-            <h2>Список повесток</h2>
+            <h2>Реестр повесток</h2>
             <p>Поиск и фильтры выполняются на сервере. На странице показывается по 10 записей.</p>
           </div>
         </div>
@@ -111,7 +111,7 @@ export function SummonsListPage({ session }: { session: Session }) {
             value={filters.officeId ?? ''}
             onChange={e => setFilters({ ...filters, officeId: e.target.value })}
           >
-            <option value="">Все подразделения</option>
+            <option value="">Все военкоматы</option>
             {offices.map(office => (
               <option key={office.id} value={office.id}>{office.name}</option>
             ))}
@@ -129,10 +129,10 @@ export function SummonsListPage({ session }: { session: Session }) {
               <thead>
                 <tr>
                   <th>Номер</th>
-                  <th>Адресат</th>
-                  <th>Подразделение</th>
-                  <th>Дата выпуска</th>
-                  <th>Срок</th>
+                  <th>Призывник</th>
+                  <th>Военкомат</th>
+                  <th>Дата формирования</th>
+                  <th>Срок явки</th>
                   <th>Статус</th>
                 </tr>
               </thead>

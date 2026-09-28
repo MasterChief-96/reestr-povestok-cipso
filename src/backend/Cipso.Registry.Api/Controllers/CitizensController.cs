@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Cipso.Registry.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Operator,Manager,Observer")]
 [Route("api/citizens")]
 public sealed class CitizensController(AppDbContext db) : ControllerBase
 {

@@ -2,44 +2,86 @@ using Cipso.Registry.Api.Contracts;
 using Cipso.Registry.Api.Data;
 using Cipso.Registry.Api.Domain;
 using Cipso.Registry.Api.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Cipso.Registry.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/summons")]
 public sealed class SummonsController(AppDbContext db, SummonsService service) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] SummonsStatus? status, [FromQuery] string? search)
+    public async Task<IActionResult> GetAll(
+        [FromQuery] SummonsStatus? status,
+        [FromQuery] Guid? officeId,
+        [FromQuery] string? search,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
     {
+        page = Math.Max(page, 1);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+
         var query = db.Summonses
             .Include(x => x.Citizen)
             .Include(x => x.AuthorityOffice)
             .AsNoTracking();
 
-        if (status is not null) query = query.Where(x => x.Status == status);
+        if (status is not null)
+            query = query.Where(x => x.Status == status);
+
+        if (officeId is not null)
+            query = query.Where(x => x.AuthorityOfficeId == officeId);
+
         if (!string.IsNullOrWhiteSpace(search))
         {
             var s = search.Trim().ToLower();
-            query = query.Where(x => x.Number.ToLower().Contains(s)
-                || x.Citizen.RegistryNumber.ToLower().Contains(s)
-                || x.Citizen.LastName.ToLower().Contains(s));
+            query = query.Where(x =>
+                x.Number.ToLower().Contains(s) ||
+                x.Citizen.RegistryNumber.ToLower().Contains(s) ||
+                x.Citizen.LastName.ToLower().Contains(s));
         }
 
-        var items = await query.OrderByDescending(x => x.IssuedAt).Take(100).Select(x => new
+        var total = await query.CountAsync();
+        var items = await query
+            .OrderByDescending(x => x.IssuedAt)
+            .ThenByDescending(x => x.DueAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(x => new
+            {
+                x.Id,
+                x.Number,
+                x.Status,
+                x.IssuedAt,
+                x.DueAt,
+                x.Reason,
+                Citizen = new
+                {
+                    x.Citizen.Id,
+                    x.Citizen.RegistryNumber,
+                    x.Citizen.LastName,
+                    x.Citizen.FirstName
+                },
+                Office = new
+                {
+                    x.AuthorityOffice.Id,
+                    x.AuthorityOffice.Code,
+                    x.AuthorityOffice.Name
+                }
+            })
+            .ToListAsync();
+
+        return Ok(new
         {
-            x.Id,
-            x.Number,
-            x.Status,
-            x.IssuedAt,
-            x.DueAt,
-            x.Reason,
-            Citizen = new { x.Citizen.Id, x.Citizen.RegistryNumber, x.Citizen.LastName, x.Citizen.FirstName },
-            Office = new { x.AuthorityOffice.Id, x.AuthorityOffice.Code, x.AuthorityOffice.Name }
-        }).ToListAsync();
-        return Ok(items);
+            items,
+            page,
+            pageSize,
+            total,
+            totalPages = (int)Math.Ceiling(total / (double)pageSize)
+        });
     }
 
     [HttpGet("{id:guid}")]
@@ -56,22 +98,37 @@ public sealed class SummonsController(AppDbContext db, SummonsService service) :
             .Include(x => x.AuditEvents)
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id);
+
         return item is null ? NotFound() : Ok(item);
     }
 
+    [Authorize(Roles = "Operator,Manager")]
     [HttpPost]
     public async Task<IActionResult> Create(CreateSummonsRequest request)
     {
         try
         {
             var entity = await service.CreateAsync(request);
-            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, new { entity.Id, entity.Number, entity.Status });
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = entity.Id },
+                new { entity.Id, entity.Number, entity.Status });
         }
-        catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
-        catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
-        catch (InvalidOperationException ex) { return Conflict(new { message = ex.Message }); }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
     }
 
+    [Authorize(Roles = "Operator,Manager")]
     [HttpPatch("{id:guid}/status")]
     public async Task<IActionResult> ChangeStatus(Guid id, ChangeStatusRequest request)
     {
@@ -80,27 +137,47 @@ public sealed class SummonsController(AppDbContext db, SummonsService service) :
             var entity = await service.ChangeStatusAsync(id, request);
             return Ok(new { entity.Id, entity.Status });
         }
-        catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
-        catch (InvalidOperationException ex) { return Conflict(new { message = ex.Message }); }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
     }
 
+    [Authorize(Roles = "Operator,Manager")]
     [HttpPost("{id:guid}/notifications")]
     public async Task<IActionResult> SendNotification(Guid id, CreateNotificationRequest request)
     {
         try
         {
             var notification = await service.SendMockNotificationAsync(id, request);
-            return Ok(new { notification.Id, notification.Channel, notification.Status, notification.DestinationMasked });
+            return Ok(new
+            {
+                notification.Id,
+                notification.Channel,
+                notification.Status,
+                notification.DestinationMasked
+            });
         }
-        catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
     }
 
+    [Authorize(Roles = "Operator,Manager")]
     [HttpPost("{id:guid}/appeals")]
     public async Task<IActionResult> CreateAppeal(Guid id, CreateAppealRequest request)
     {
         var summons = await db.Summonses.FindAsync(id);
-        if (summons is null) return NotFound();
-        if (string.IsNullOrWhiteSpace(request.Text)) return BadRequest(new { message = "Appeal text is required." });
+        if (summons is null)
+            return NotFound();
+
+        if (string.IsNullOrWhiteSpace(request.Text))
+            return BadRequest(new { message = "Appeal text is required." });
 
         var appeal = new Appeal
         {
@@ -109,6 +186,7 @@ public sealed class SummonsController(AppDbContext db, SummonsService service) :
             Text = request.Text.Trim(),
             Status = AppealStatus.Submitted
         };
+
         db.Appeals.Add(appeal);
         db.AuditEvents.Add(new AuditEvent
         {
@@ -117,6 +195,7 @@ public sealed class SummonsController(AppDbContext db, SummonsService service) :
             Actor = request.Actor.Trim(),
             Details = request.Type.Trim()
         });
+
         await db.SaveChangesAsync();
         return Ok(appeal);
     }

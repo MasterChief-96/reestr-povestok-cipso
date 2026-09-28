@@ -1,6 +1,6 @@
 # ERD
 
-В модели 11 доменных сущностей: `Citizen`, `Address`, `AuthorityOffice`, `Employee`, `Summons`, `SummonsStatusHistory`, `Notification`, `DeliveryAttempt`, `Appeal`, `Document`, `AuditEvent`.
+В модели 12 сущностей, включая отдельную системную учётную запись для UC-11.
 
 ```mermaid
 erDiagram
@@ -21,7 +21,6 @@ erDiagram
       string RegistryNumber UK
       string LastName
       string FirstName
-      string MiddleName
       date BirthDate
       string Email
       string Phone
@@ -29,12 +28,10 @@ erDiagram
     ADDRESS {
       uuid Id PK
       uuid CitizenId FK
-      string PostalCode
       string Region
       string City
       string Street
       string Building
-      string Apartment
     }
     AUTHORITY_OFFICE {
       uuid Id PK
@@ -59,7 +56,6 @@ erDiagram
       datetime DueAt
       string Reason
       string Status
-      string Comment
     }
     SUMMONS_STATUS_HISTORY {
       uuid Id PK
@@ -68,23 +64,18 @@ erDiagram
       string ToStatus
       datetime ChangedAt
       string ChangedBy
-      string Comment
     }
     NOTIFICATION {
       uuid Id PK
       uuid SummonsId FK
       string Channel
-      string DestinationMasked
       string Status
-      datetime CreatedAt
     }
     DELIVERY_ATTEMPT {
       uuid Id PK
       uuid NotificationId FK
       int AttemptNumber
       string Result
-      datetime AttemptedAt
-      string ProviderMessage
     }
     APPEAL {
       uuid Id PK
@@ -92,7 +83,6 @@ erDiagram
       string Type
       string Text
       string Status
-      datetime SubmittedAt
     }
     DOCUMENT {
       uuid Id PK
@@ -100,14 +90,21 @@ erDiagram
       string FileName
       string MimeType
       string StorageUri
-      datetime CreatedAt
     }
     AUDIT_EVENT {
       uuid Id PK
       uuid SummonsId FK
       string Action
       string Actor
-      datetime OccurredAt
-      string Details
+    }
+    SYSTEM_ACCOUNT {
+      uuid Id PK
+      string ExternalSubject UK
+      string DisplayName
+      string Role
+      string CitizenRegistryNumber
+      bool IsActive
     }
 ```
+
+`Citizen` в коде соответствует карточке призывника, а `AuthorityOffice` — военкомату. Эти технические имена сохранены, чтобы не ломать существующую initial migration.

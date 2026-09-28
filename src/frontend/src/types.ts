@@ -16,6 +16,16 @@ export interface Citizen {
   firstName: string;
   middleName?: string | null;
   birthDate: string;
+  email?: string | null;
+  phone?: string | null;
+  address?: {
+    postalCode: string;
+    region: string;
+    city: string;
+    street: string;
+    building: string;
+    apartment?: string | null;
+  } | null;
 }
 
 export interface Employee {
@@ -39,7 +49,7 @@ export interface SummonsListItem {
   status: SummonsStatus;
   issuedAt: string;
   dueAt: string;
-  reason: string;
+  reason?: string;
   citizen: {
     id: string;
     registryNumber: string;
@@ -69,16 +79,7 @@ export interface SummonsDetail {
   reason: string;
   status: SummonsStatus;
   comment?: string | null;
-  citizen: Citizen & {
-    address?: {
-      postalCode: string;
-      region: string;
-      city: string;
-      street: string;
-      building: string;
-      apartment?: string | null;
-    } | null;
-  };
+  citizen: Citizen;
   authorityOffice: Office;
   createdByEmployee: Employee;
   statusHistory: Array<{
@@ -143,4 +144,54 @@ export interface CreateSummonsPayload {
   dueAt: string;
   reason: string;
   comment?: string;
+}
+
+export interface DashboardSummary {
+  total: number;
+  active: number;
+  completed: number;
+  cancelled: number;
+  citizens: number;
+  appeals: number;
+  documents: number;
+  byStatus: Partial<Record<SummonsStatus, number>>;
+  recent: SummonsListItem[];
+}
+
+export interface AppealListItem {
+  id: string;
+  type: string;
+  text: string;
+  status: string;
+  submittedAt: string;
+  summons: {
+    id: string;
+    number: string;
+    status: SummonsStatus;
+  };
+  citizen: {
+    id: string;
+    registryNumber: string;
+    lastName: string;
+    firstName: string;
+  };
+}
+
+export interface DocumentListItem {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  storageUri: string;
+  createdAt: string;
+  summons: {
+    id: string;
+    number: string;
+    status: SummonsStatus;
+  };
+  citizen: {
+    id: string;
+    registryNumber: string;
+    lastName: string;
+    firstName: string;
+  };
 }

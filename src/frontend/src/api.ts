@@ -1,6 +1,9 @@
 import type {
+  AppealListItem,
   Citizen,
   CreateSummonsPayload,
+  DashboardSummary,
+  DocumentListItem,
   Office,
   PagedSummons,
   Session,
@@ -10,11 +13,17 @@ import type {
 
 export const SESSION_KEY = 'cipso.session';
 
-function readSession(): Session | null {
+export function readSession(): Session | null {
   const raw = localStorage.getItem(SESSION_KEY);
   if (!raw) return null;
+
   try {
-    return JSON.parse(raw) as Session;
+    const session = JSON.parse(raw) as Session;
+    if (new Date(session.expiresAt).getTime() <= Date.now()) {
+      localStorage.removeItem(SESSION_KEY);
+      return null;
+    }
+    return session;
   } catch {
     return null;
   }
@@ -67,6 +76,10 @@ export async function login(username: string, password: string): Promise<Session
   }, false);
 }
 
+export async function getDashboard(): Promise<DashboardSummary> {
+  return apiFetch<DashboardSummary>('/api/dashboard');
+}
+
 export async function getSummons(filters: SummonsFilters): Promise<PagedSummons> {
   const params = new URLSearchParams();
   if (filters.search) params.set('search', filters.search);
@@ -88,6 +101,14 @@ export async function getCitizens(): Promise<Citizen[]> {
 
 export async function getOffices(): Promise<Office[]> {
   return apiFetch<Office[]>('/api/offices');
+}
+
+export async function getAppeals(): Promise<AppealListItem[]> {
+  return apiFetch<AppealListItem[]>('/api/appeals');
+}
+
+export async function getDocuments(): Promise<DocumentListItem[]> {
+  return apiFetch<DocumentListItem[]>('/api/documents');
 }
 
 export async function createSummons(

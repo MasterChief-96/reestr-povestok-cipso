@@ -1,10 +1,12 @@
 using Cipso.Registry.Api.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Cipso.Registry.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/offices")]
 public sealed class OfficesController(AppDbContext db) : ControllerBase
 {

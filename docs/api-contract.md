@@ -2,19 +2,50 @@
 
 Базовый URL: `/api`.
 
+Кроме `/api/health` и `/api/auth/login`, endpoint'ы требуют JWT Bearer token.
+
 ## Health
 
 `GET /api/health`
 
 ```json
-{ "status": "ok" }
+{ "status": "ok", "service": "cipso-registry-api" }
 ```
+
+## Authentication
+
+`POST /api/auth/login`
+
+```json
+{
+  "username": "operator",
+  "password": "demo123!"
+}
+```
+
+Ответ:
+
+```json
+{
+  "token": "<jwt>",
+  "username": "operator",
+  "displayName": "Демо-оператор",
+  "role": "Operator",
+  "expiresAt": "2026-09-28T16:00:00+00:00"
+}
+```
+
+Роли:
+
+- `Operator` — чтение и изменение;
+- `Manager` — чтение и изменение;
+- `Observer` — только чтение.
 
 ## Citizens
 
 `GET /api/citizens?search=...`
 
-`POST /api/citizens`
+`POST /api/citizens` — только Operator/Manager.
 
 ```json
 {
@@ -42,11 +73,25 @@
 
 ## Summons
 
-`GET /api/summons?status=Issued&search=...`
+`GET /api/summons?status=Issued&officeId=<uuid>&search=...&page=1&pageSize=20`
 
-`GET /api/summons/{id}`
+Ответ:
 
-`POST /api/summons`
+```json
+{
+  "items": [],
+  "page": 1,
+  "pageSize": 20,
+  "total": 0,
+  "totalPages": 0
+}
+```
+
+Ограничение `pageSize`: 1–100.
+
+`GET /api/summons/{id}` — детальная карточка с историей, уведомлениями, обращениями, документами и аудитом.
+
+`POST /api/summons` — только Operator/Manager.
 
 ```json
 {
@@ -61,7 +106,7 @@
 }
 ```
 
-`PATCH /api/summons/{id}/status`
+`PATCH /api/summons/{id}/status` — только Operator/Manager.
 
 ```json
 {
@@ -71,7 +116,7 @@
 }
 ```
 
-`POST /api/summons/{id}/notifications`
+`POST /api/summons/{id}/notifications` — только Operator/Manager.
 
 ```json
 {
@@ -80,7 +125,7 @@
 }
 ```
 
-`POST /api/summons/{id}/appeals`
+`POST /api/summons/{id}/appeals` — только Operator/Manager.
 
 ```json
 {
@@ -92,4 +137,10 @@
 
 ## Ошибки
 
-Валидационные и бизнес-ошибки возвращаются как `application/problem+json` с кодами 400/404/409.
+Основные коды:
+
+- `400 Bad Request` — некорректные данные;
+- `401 Unauthorized` — отсутствует или истек JWT;
+- `403 Forbidden` — роль не дает права на изменение;
+- `404 Not Found` — сущность не найдена;
+- `409 Conflict` — конфликт бизнес-правил, например дубликат номера.

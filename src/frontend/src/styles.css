@@ -52,7 +52,7 @@ code { font-size: 12px; overflow-wrap: anywhere; }
   display: grid;
   gap: 4px;
 }
-.sidebar-user span { color: #aeb9ca; font-size: 12px; }
+.sidebar-user span, .sidebar-user small { color: #aeb9ca; font-size: 12px; }
 .sidebar-user button {
   width: max-content;
   padding: 0;
@@ -410,4 +410,86 @@ td small, .detail-grid small, .timeline small, .compact-row small {
   .top-actions { align-items: stretch; flex-direction: column; width: 100%; }
   .top-actions .primary, .top-actions .secondary { width: 100%; }
   .status-row { grid-template-columns: 100px 1fr auto; }
+}
+
+
+.login-card-wide { width: min(760px, 100%); }
+.stub-warning {
+  margin: 20px 0;
+  padding: 14px 16px;
+  border: 1px solid #d8e1ed;
+  border-radius: 10px;
+  background: #f7f9fc;
+  display: grid;
+  gap: 4px;
+}
+.stub-warning span, .login-footnote { color: #69758a; font-size: 13px; }
+.account-choice {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.account-option {
+  text-align: left;
+  border: 1px solid #d7dee7;
+  background: white;
+  border-radius: 10px;
+  padding: 13px;
+  display: grid;
+  gap: 4px;
+  color: #28354c;
+}
+.account-option span, .account-option small { color: #728097; font-size: 12px; }
+.account-option.selected {
+  border-color: #405a82;
+  box-shadow: 0 0 0 3px rgba(64, 90, 130, .12);
+  background: #f8faff;
+}
+.selected-account {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f3f6fa;
+  color: #536075;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+.provider-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+.provider-button {
+  border: 0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  min-height: 64px;
+  color: white;
+  font-weight: 700;
+  display: grid;
+  gap: 3px;
+}
+.provider-button small { font-weight: 400; opacity: .85; }
+.provider-max { background: #233149; }
+.provider-gosuslugi { background: #315b94; }
+.login-footnote { margin: 16px 0 0; text-align: center; }
+.accounts-grid {
+  display: grid;
+  grid-template-columns: minmax(360px, .8fr) minmax(420px, 1.2fr);
+  gap: 18px;
+}
+.account-admin-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid #edf0f4;
+}
+.account-admin-row:last-child { border-bottom: 0; }
+.account-admin-row small { display: block; color: #7e899a; margin-top: 3px; }
+
+@media (max-width: 850px) {
+  .account-choice, .provider-actions, .accounts-grid { grid-template-columns: 1fr; }
 }

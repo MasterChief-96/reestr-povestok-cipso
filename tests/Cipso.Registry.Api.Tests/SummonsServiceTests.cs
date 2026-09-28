@@ -3,6 +3,7 @@ using Cipso.Registry.Api.Data;
 using Cipso.Registry.Api.Domain;
 using Cipso.Registry.Api.Services;
 using Microsoft.EntityFrameworkCore;
+using Xunit;
 
 namespace Cipso.Registry.Api.Tests;
 

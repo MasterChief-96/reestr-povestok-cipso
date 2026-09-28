@@ -93,6 +93,11 @@ app.MapGet("/api/health", () => Results.Ok(new { status = "ok", service = "cipso
 await using (var scope = app.Services.CreateAsyncScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var logger = scope.ServiceProvider
+        .GetRequiredService<ILoggerFactory>()
+        .CreateLogger("DatabaseStartup");
+
+    await LegacyDatabaseBootstrapper.PrepareAsync(db, logger);
     await db.Database.MigrateAsync();
     await SeedData.InitializeAsync(db);
 }

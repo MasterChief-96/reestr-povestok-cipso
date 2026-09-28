@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Cipso.Registry.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Operator,Manager,Observer")]
 [Route("api/summons")]
 public sealed class SummonsController(AppDbContext db, SummonsService service) : ControllerBase
 {

@@ -19,7 +19,7 @@ export function DocumentsPage() {
       <header className="topbar">
         <div>
           <p className="eyebrow">Связанные данные</p>
-          <h1>Документы</h1>
+          <h1>Документы призывного учёта</h1>
         </div>
         <span className="environment">{items.length} записей</span>
       </header>
@@ -27,8 +27,8 @@ export function DocumentsPage() {
       <section className="panel">
         <div className="panel-head">
           <div>
-            <h2>Метаданные документов</h2>
-            <p>В учебном MVP хранятся только метаданные, без загрузки реальных файлов.</p>
+            <h2>Сопроводительные документы</h2>
+            <p>В MVP хранятся только метаданные документов воинского учёта; реальные файлы не принимаются.</p>
           </div>
         </div>
 
@@ -41,7 +41,7 @@ export function DocumentsPage() {
                 <th>Создан</th>
                 <th>Имя файла</th>
                 <th>MIME type</th>
-                <th>Адресат</th>
+                <th>Призывник</th>
                 <th>Повестка</th>
                 <th>Storage URI</th>
               </tr>

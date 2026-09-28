@@ -168,6 +168,20 @@ public partial class AppDbContextModelSnapshot : ModelSnapshot
             b.ToTable("AuditEvents");
         });
 
+        modelBuilder.Entity<SystemAccount>(b =>
+        {
+            b.Property<Guid>(x => x.Id).ValueGeneratedOnAdd();
+            b.Property<string>(x => x.ExternalSubject).HasMaxLength(96).IsRequired();
+            b.Property<string>(x => x.DisplayName).HasMaxLength(180).IsRequired();
+            b.Property<string>(x => x.Role).HasMaxLength(64).IsRequired();
+            b.Property<string?>(x => x.CitizenRegistryNumber).HasMaxLength(64);
+            b.Property<bool>(x => x.IsActive);
+            b.Property<DateTimeOffset>(x => x.CreatedAt);
+            b.HasKey(x => x.Id);
+            b.HasIndex(x => x.ExternalSubject).IsUnique();
+            b.ToTable("SystemAccounts");
+        });
+
         modelBuilder.Entity<Address>()
             .HasOne(x => x.Citizen)
             .WithOne(x => x.Address)

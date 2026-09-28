@@ -1,0 +1,47 @@
+using Cipso.Registry.Api.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace Cipso.Registry.Api.Controllers;
+
+[ApiController]
+[Authorize]
+[Route("api/documents")]
+public sealed class DocumentsController(AppDbContext db) : ControllerBase
+{
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var items = await db.Documents
+            .AsNoTracking()
+            .Include(x => x.Summons)
+            .ThenInclude(x => x.Citizen)
+            .OrderByDescending(x => x.CreatedAt)
+            .Take(200)
+            .Select(x => new
+            {
+                x.Id,
+                x.FileName,
+                x.MimeType,
+                x.StorageUri,
+                x.CreatedAt,
+                Summons = new
+                {
+                    x.Summons.Id,
+                    x.Summons.Number,
+                    x.Summons.Status
+                },
+                Citizen = new
+                {
+                    x.Summons.Citizen.Id,
+                    x.Summons.Citizen.RegistryNumber,
+                    x.Summons.Citizen.LastName,
+                    x.Summons.Citizen.FirstName
+                }
+            })
+            .ToListAsync();
+
+        return Ok(items);
+    }
+}

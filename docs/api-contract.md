@@ -2,7 +2,7 @@
 
 Базовый URL: `/api`.
 
-Кроме `/api/health` и `/api/auth/login`, endpoint'ы требуют JWT Bearer token.
+Все endpoint'ы, кроме внешнего mock-входа и `/api/health`, требуют JWT Bearer.
 
 ## Health
 
@@ -12,14 +12,31 @@
 { "status": "ok", "service": "cipso-registry-api" }
 ```
 
-## Authentication
+## UC-00. Вход через внешнего провайдера — заглушка
 
-`POST /api/auth/login`
+### Доступные учебные учётные записи
+
+`GET /api/auth/stub/accounts`
+
+Endpoint публичный только потому, что он заменяет экран внешнего провайдера в учебном контуре.
+
+### Mock-вход MAX / Госуслуги
+
+`POST /api/auth/stub/external`
 
 ```json
 {
-  "username": "operator",
-  "password": "demo123!"
+  "provider": "MAX",
+  "accountId": "<uuid>"
+}
+```
+
+Либо:
+
+```json
+{
+  "provider": "Gosuslugi",
+  "accountId": "<uuid>"
 }
 ```
 
@@ -28,33 +45,47 @@
 ```json
 {
   "token": "<jwt>",
-  "username": "operator",
-  "displayName": "Демо-оператор",
+  "accountId": "<uuid>",
+  "displayName": "Демо-секретарь",
   "role": "Operator",
-  "expiresAt": "2026-09-28T16:00:00+00:00"
+  "provider": "MAX",
+  "expiresAt": "2026-09-28T20:00:00+00:00"
 }
 ```
 
-Роли:
+Это **не реальная интеграция** с MAX или Госуслугами/«Госключом».
 
-- `Operator` — чтение и изменение;
-- `Manager` — чтение и изменение;
-- `Observer` — только чтение.
+## UC-11. Учётные записи
 
-## Citizens
+Только `AutomationEngineer`.
 
-`GET /api/citizens?search=...`
-
-`POST /api/citizens` — только Operator/Manager.
+- `GET /api/accounts`
+- `POST /api/accounts`
 
 ```json
 {
-  "registryNumber": "TEST-0002",
-  "lastName": "Петров",
-  "firstName": "Петр",
-  "middleName": "Петрович",
-  "birthDate": "2000-01-01",
-  "email": "petrov@example.test",
+  "displayName": "Учебный пользователь",
+  "role": "Observer",
+  "citizenRegistryNumber": "TEST-0001"
+}
+```
+
+Самостоятельной регистрации нет.
+
+## Призывники
+
+`GET /api/citizens?search=...`
+
+`POST /api/citizens` — Operator/Manager.
+
+```json
+{
+  "registryNumber": "TEST-0013",
+  "lastName": "Примеров",
+  "firstName": "Иван",
+  "middleName": "Иванович",
+  "birthDate": "2001-05-10",
+  "email": "example@example.test",
   "phone": "+70000000000",
   "address": {
     "postalCode": "000000",
@@ -67,80 +98,45 @@
 }
 ```
 
-## Offices
+## Военкоматы
 
 `GET /api/offices`
 
-## Summons
+Используется при создании повестки и фильтрации реестра.
+
+## Повестки военного учёта
 
 `GET /api/summons?status=Issued&officeId=<uuid>&search=...&page=1&pageSize=20`
 
-Ответ:
+Ответ содержит `items`, `page`, `pageSize`, `total`, `totalPages`. `pageSize`: 1–100.
+
+`GET /api/summons/{id}` — карточка: призывник, военкомат, дата формирования, срок явки, статус, история, уведомления, обращения, документы и аудит.
+
+`POST /api/summons` — Operator/Manager.
 
 ```json
 {
-  "items": [],
-  "page": 1,
-  "pageSize": 20,
-  "total": 0,
-  "totalPages": 0
-}
-```
-
-Ограничение `pageSize`: 1–100.
-
-`GET /api/summons/{id}` — детальная карточка с историей, уведомлениями, обращениями, документами и аудитом.
-
-`POST /api/summons` — только Operator/Manager.
-
-```json
-{
-  "number": "CIPSO-2026-0002",
+  "number": "CIPSO-2026-0030",
   "citizenId": "<uuid>",
   "authorityOfficeId": "<uuid>",
   "createdByEmployeeId": "<uuid>",
   "issuedAt": "2026-09-28",
   "dueAt": "2026-10-03T09:00:00Z",
-  "reason": "Учебное оповещение",
+  "reason": "Явка в военный комиссариат для уточнения документов воинского учёта",
   "comment": "Синтетические данные"
 }
 ```
 
-`PATCH /api/summons/{id}/status` — только Operator/Manager.
+`PATCH /api/summons/{id}/status` — Operator/Manager.
 
-```json
-{
-  "status": "Acknowledged",
-  "actor": "demo.operator",
-  "comment": "Подтверждено в демонстрации"
-}
-```
+`POST /api/summons/{id}/notifications` — Operator/Manager; реальная отправка отсутствует.
 
-`POST /api/summons/{id}/notifications` — только Operator/Manager.
-
-```json
-{
-  "channel": "Email",
-  "destination": "demo@example.test"
-}
-```
-
-`POST /api/summons/{id}/appeals` — только Operator/Manager.
-
-```json
-{
-  "type": "Clarification",
-  "text": "Просьба уточнить время",
-  "actor": "demo.operator"
-}
-```
+`POST /api/summons/{id}/appeals` — Operator/Manager.
 
 ## Ошибки
 
-Основные коды:
-
 - `400 Bad Request` — некорректные данные;
-- `401 Unauthorized` — отсутствует или истек JWT;
-- `403 Forbidden` — роль не дает права на изменение;
+- `401 Unauthorized` — отсутствует/истёк JWT или неверная учебная учётная запись;
+- `403 Forbidden` — роль не имеет права;
 - `404 Not Found` — сущность не найдена;
-- `409 Conflict` — конфликт бизнес-правил, например дубликат номера.
+- `409 Conflict` — конфликт бизнес-правил.

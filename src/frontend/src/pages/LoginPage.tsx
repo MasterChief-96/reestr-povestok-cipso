@@ -1,72 +1,111 @@
-import { FormEvent, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login, SESSION_KEY } from '../api';
-import type { Session } from '../types';
+import { externalStubLogin, getStubAccounts, SESSION_KEY } from '../api';
+import { roleLabels } from '../constants';
+import type { AuthProvider, Session, StubAccount } from '../types';
 
 export function LoginPage({ onLogin }: { onLogin: (session: Session) => void }) {
   const navigate = useNavigate();
-  const [username, setUsername] = useState('operator');
-  const [password, setPassword] = useState('demo123!');
+  const [accounts, setAccounts] = useState<StubAccount[]>([]);
+  const [accountId, setAccountId] = useState('');
   const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
+  const [busyProvider, setBusyProvider] = useState<AuthProvider | null>(null);
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    setBusy(true);
+  useEffect(() => {
+    void getStubAccounts()
+      .then(items => {
+        setAccounts(items);
+        setAccountId(items[0]?.id ?? '');
+      })
+      .catch(e => setError(e instanceof Error ? e.message : 'Не удалось загрузить учебные учётные записи'));
+  }, []);
+
+  const selected = useMemo(
+    () => accounts.find(account => account.id === accountId),
+    [accounts, accountId]
+  );
+
+  async function signIn(provider: AuthProvider) {
+    if (!accountId) return;
+    setBusyProvider(provider);
     setError('');
 
     try {
-      const session = await login(username, password);
+      const session = await externalStubLogin(provider, accountId);
       localStorage.setItem(SESSION_KEY, JSON.stringify(session));
       onLogin(session);
-      navigate('/dashboard', { replace: true });
+      navigate(session.role === 'AutomationEngineer' ? '/accounts' : '/dashboard', { replace: true });
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Не удалось войти');
+      setError(e instanceof Error ? e.message : 'Не удалось выполнить учебный вход');
     } finally {
-      setBusy(false);
+      setBusyProvider(null);
     }
   }
 
   return (
     <main className="login-page">
-      <section className="login-card">
+      <section className="login-card login-card-wide">
         <div className="brand brand-dark">ЦИПСО</div>
-        <p className="eyebrow">Учебный демонстрационный контур</p>
-        <h1>Реестр электронных повесток</h1>
+        <p className="eyebrow">Реестр повесток военного учёта · учебный контур</p>
+        <h1>Вход в систему</h1>
         <p className="muted">
-          Войдите под одной из демонстрационных ролей. Используются только синтетические данные.
+          По проектному ТЗ локального логина и пароля нет. В рабочем варианте аутентификация
+          выполняется через MAX либо Госуслуги с использованием «Госключа». Сейчас обе
+          интеграции представлены безопасными демонстрационными заглушками.
         </p>
 
-        <form onSubmit={submit} className="login-form">
-          <label>
-            Логин
-            <input
-              value={username}
-              onChange={e => setUsername(e.target.value)}
-              autoComplete="username"
-            />
-          </label>
-          <label>
-            Пароль
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              autoComplete="current-password"
-            />
-          </label>
-          {error && <div className="error compact">{error}</div>}
-          <button className="primary" disabled={busy}>
-            {busy ? 'Вход…' : 'Войти'}
-          </button>
-        </form>
-
-        <div className="demo-credentials">
-          <strong>Демо-аккаунты</strong>
-          <span>operator / demo123! — чтение и изменение</span>
-          <span>manager / demo123! — чтение и изменение</span>
-          <span>observer / demo123! — только чтение</span>
+        <div className="stub-warning">
+          <strong>Заглушка внешней аутентификации</strong>
+          <span>Выберите заранее созданную учебную учётную запись, затем провайдера входа.</span>
         </div>
+
+        <div className="account-choice">
+          {accounts.map(account => (
+            <button
+              type="button"
+              key={account.id}
+              className={`account-option${account.id === accountId ? ' selected' : ''}`}
+              onClick={() => setAccountId(account.id)}
+            >
+              <strong>{account.displayName}</strong>
+              <span>{roleLabels[account.role]}</span>
+              {account.citizenRegistryNumber && (
+                <small>Реестровый № {account.citizenRegistryNumber}</small>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {selected && (
+          <div className="selected-account">
+            Вход как: <strong>{selected.displayName}</strong> · {roleLabels[selected.role]}
+          </div>
+        )}
+
+        {error && <div className="error compact">{error}</div>}
+
+        <div className="provider-actions">
+          <button
+            className="provider-button provider-max"
+            disabled={!accountId || busyProvider !== null}
+            onClick={() => void signIn('MAX')}
+          >
+            {busyProvider === 'MAX' ? 'Вход…' : 'Войти через MAX'}
+            <small>демо-заглушка</small>
+          </button>
+          <button
+            className="provider-button provider-gosuslugi"
+            disabled={!accountId || busyProvider !== null}
+            onClick={() => void signIn('Gosuslugi')}
+          >
+            {busyProvider === 'Gosuslugi' ? 'Вход…' : 'Войти через Госуслуги'}
+            <small>«Госключ» · демо-заглушка</small>
+          </button>
+        </div>
+
+        <p className="login-footnote">
+          Самостоятельная регистрация отсутствует. Учётные записи создаёт инженер автоматизации.
+        </p>
       </section>
     </main>
   );

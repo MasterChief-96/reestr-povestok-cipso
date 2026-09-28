@@ -22,7 +22,9 @@ public sealed class OfficesController(AppDbContext db) : ControllerBase
 
             var officeIds = await db.Summonses
                 .AsNoTracking()
-                .Where(x => x.Citizen.RegistryNumber == registryNumber)
+                .Where(x =>
+                    x.Citizen.RegistryNumber == registryNumber &&
+                    !x.Citizen.IsWrittenOff)
                 .Select(x => x.AuthorityOfficeId)
                 .Distinct()
                 .ToListAsync();

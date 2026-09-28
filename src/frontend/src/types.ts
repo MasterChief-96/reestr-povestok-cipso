@@ -33,6 +33,9 @@ export interface Citizen {
   birthDate: string;
   email?: string | null;
   phone?: string | null;
+  isWrittenOff?: boolean;
+  writtenOffAt?: string | null;
+  writtenOffBy?: string | null;
   address?: {
     postalCode: string;
     region: string;

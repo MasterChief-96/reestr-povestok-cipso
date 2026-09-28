@@ -12,6 +12,9 @@ public sealed class Citizen
     public DateOnly BirthDate { get; set; }
     [MaxLength(255)] public string? Email { get; set; }
     [MaxLength(32)] public string? Phone { get; set; }
+    public bool IsWrittenOff { get; set; }
+    public DateTimeOffset? WrittenOffAt { get; set; }
+    [MaxLength(180)] public string? WrittenOffBy { get; set; }
     public Address? Address { get; set; }
     public List<Summons> Summonses { get; set; } = [];
 }

@@ -17,6 +17,10 @@ public sealed class SummonsService(AppDbContext db)
 
         var citizen = await db.Citizens.FindAsync(request.CitizenId)
             ?? throw new KeyNotFoundException("Citizen not found.");
+
+        if (citizen.IsWrittenOff)
+            throw new InvalidOperationException("Нельзя выписать повестку списанному призывнику.");
+
         var office = await db.AuthorityOffices.FindAsync(request.AuthorityOfficeId)
             ?? throw new KeyNotFoundException("Authority office not found.");
         var employee = await db.Employees.FindAsync(request.CreatedByEmployeeId)

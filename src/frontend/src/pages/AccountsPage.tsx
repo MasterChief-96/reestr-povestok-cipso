@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { createAccount, getAccounts } from '../api';
+import { createAccount, getAccounts, getCitizens, writeOffCitizen } from '../api';
 import { roleLabels } from '../constants';
-import type { SystemAccount, UserRole } from '../types';
+import type { Citizen, SystemAccount, UserRole } from '../types';
 
 const assignableRoles: UserRole[] = ['Operator', 'Manager', 'Observer', 'AutomationEngineer'];
 
@@ -23,11 +23,13 @@ const emptyConscript = {
 
 export function AccountsPage() {
   const [accounts, setAccounts] = useState<SystemAccount[]>([]);
+  const [citizens, setCitizens] = useState<Citizen[]>([]);
   const [displayName, setDisplayName] = useState('');
   const [role, setRole] = useState<UserRole>('Observer');
   const [conscript, setConscript] = useState(emptyConscript);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [writeOffBusy, setWriteOffBusy] = useState<string | null>(null);
 
   const isConscript = role === 'Observer';
 
@@ -39,8 +41,15 @@ export function AccountsPage() {
     [conscript.lastName, conscript.firstName, conscript.middleName]
   );
 
+  const citizensByRegistry = useMemo(
+    () => new Map(citizens.map(citizen => [citizen.registryNumber, citizen])),
+    [citizens]
+  );
+
   async function load() {
-    setAccounts(await getAccounts());
+    const [accountItems, citizenItems] = await Promise.all([getAccounts(), getCitizens()]);
+    setAccounts(accountItems);
+    setCitizens(citizenItems);
   }
 
   useEffect(() => {
@@ -88,6 +97,29 @@ export function AccountsPage() {
       setError(e instanceof Error ? e.message : 'Не удалось создать учётную запись');
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function handleWriteOff(account: SystemAccount) {
+    if (!account.citizenRegistryNumber) return;
+
+    const citizen = citizensByRegistry.get(account.citizenRegistryNumber);
+    if (!citizen) return;
+
+    if (!window.confirm(
+      `Списать призывника ${account.displayName} (${account.citizenRegistryNumber})? Его учётная запись будет отключена.`
+    )) return;
+
+    setWriteOffBusy(citizen.id);
+    setError('');
+
+    try {
+      await writeOffCitizen(citizen.id);
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Не удалось списать призывника');
+    } finally {
+      setWriteOffBusy(null);
     }
   }
 
@@ -205,22 +237,39 @@ export function AccountsPage() {
           <div className="panel-head">
             <div>
               <h2>Созданные учётные записи</h2>
-              <p>Призывники связаны с карточками по реестровому номеру.</p>
+              <p>Инженер может списать активного призывника. Исторические повестки при этом сохраняются.</p>
             </div>
           </div>
           <div className="compact-list">
-            {accounts.map(account => (
-              <div className="account-admin-row" key={account.id}>
-                <div>
-                  <strong>{account.displayName}</strong>
-                  <small>{roleLabels[account.role]} · {account.externalSubject}</small>
-                  {account.citizenRegistryNumber && (
-                    <small>Призывник: {account.citizenRegistryNumber}</small>
-                  )}
+            {accounts.map(account => {
+              const linkedCitizen = account.citizenRegistryNumber
+                ? citizensByRegistry.get(account.citizenRegistryNumber)
+                : undefined;
+
+              return (
+                <div className="account-admin-row" key={account.id}>
+                  <div>
+                    <strong>{account.displayName}</strong>
+                    <small>{roleLabels[account.role]} · {account.externalSubject}</small>
+                    {account.citizenRegistryNumber && (
+                      <small>Призывник: {account.citizenRegistryNumber}</small>
+                    )}
+                  </div>
+                  <div className="account-actions">
+                    <span className="text-badge">{account.isActive ? 'Активна' : 'Отключена'}</span>
+                    {account.role === 'Observer' && linkedCitizen && (
+                      <button
+                        className="danger"
+                        disabled={writeOffBusy === linkedCitizen.id}
+                        onClick={() => void handleWriteOff(account)}
+                      >
+                        {writeOffBusy === linkedCitizen.id ? 'Списание…' : 'Списать'}
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <span className="text-badge">{account.isActive ? 'Активна' : 'Отключена'}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       </div>

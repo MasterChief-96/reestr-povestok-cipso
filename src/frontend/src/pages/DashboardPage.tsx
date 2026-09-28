@@ -20,6 +20,8 @@ export function DashboardPage({ session }: { session: Session }) {
 
   const statusEntries = Object.entries(data.byStatus) as Array<[SummonsStatus, number]>;
   const observer = session.role === 'Observer';
+  const latestSummons = observer ? data.recent[0] : undefined;
+  const remainingRecent = observer ? data.recent.slice(1) : data.recent;
 
   return (
     <>
@@ -29,9 +31,38 @@ export function DashboardPage({ session }: { session: Session }) {
           <h1>{observer ? 'Моя сводка' : 'Сводка по воинскому учёту'}</h1>
         </div>
         <Link className="primary button-link" to="/summons">
-          {observer ? 'Мои повестки' : 'Открыть реестр'}
+          {observer ? 'Все мои повестки' : 'Открыть реестр'}
         </Link>
       </header>
+
+      {observer && latestSummons && (
+        <Link to={`/summons/${latestSummons.id}`} className="latest-summons-hero">
+          <div className="latest-summons-hero-head">
+            <div>
+              <span className="latest-summons-label">Последняя повестка</span>
+              <strong>{latestSummons.number}</strong>
+            </div>
+            <StatusBadge status={latestSummons.status} />
+          </div>
+
+          <div className="latest-summons-grid">
+            <div>
+              <span>Срок явки</span>
+              <strong>{new Date(latestSummons.dueAt).toLocaleString('ru-RU')}</strong>
+            </div>
+            <div>
+              <span>Военкомат</span>
+              <strong>{latestSummons.office.name}</strong>
+            </div>
+            <div className="latest-summons-reason">
+              <span>Основание</span>
+              <strong>{latestSummons.reason ?? '—'}</strong>
+            </div>
+          </div>
+
+          <div className="latest-summons-open">Открыть повестку →</div>
+        </Link>
+      )}
 
       <section className="stats stats-wide">
         <article><span>{observer ? 'Мои повестки' : 'Всего повесток'}</span><strong>{data.total}</strong></article>
@@ -65,12 +96,16 @@ export function DashboardPage({ session }: { session: Session }) {
         <section className="panel">
           <div className="panel-head">
             <div>
-              <h2>{observer ? 'Мои последние повестки' : 'Последние повестки'}</h2>
-              <p>{observer ? 'Отображаются только повестки вашей учётной карточки.' : 'Пять последних повесток по дате формирования.'}</p>
+              <h2>{observer ? 'Предыдущие повестки' : 'Последние повестки'}</h2>
+              <p>
+                {observer
+                  ? 'Последняя повестка вынесена в крупную карточку выше.'
+                  : 'Пять последних повесток по дате формирования.'}
+              </p>
             </div>
           </div>
           <div className="compact-list">
-            {data.recent.map(item => (
+            {remainingRecent.map(item => (
               <Link key={item.id} to={`/summons/${item.id}`} className="compact-row">
                 <div>
                   <strong>{item.number}</strong>
@@ -79,7 +114,11 @@ export function DashboardPage({ session }: { session: Session }) {
                 <StatusBadge status={item.status} />
               </Link>
             ))}
-            {!data.recent.length && <div className="state">Повесток пока нет</div>}
+            {!remainingRecent.length && (
+              <div className="state">
+                {observer && latestSummons ? 'Других повесток пока нет' : 'Повесток пока нет'}
+              </div>
+            )}
           </div>
         </section>
       </div>

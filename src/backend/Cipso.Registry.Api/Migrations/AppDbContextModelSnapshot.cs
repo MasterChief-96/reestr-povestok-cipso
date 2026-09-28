@@ -25,6 +25,9 @@ public partial class AppDbContextModelSnapshot : ModelSnapshot
             b.Property<DateOnly>(x => x.BirthDate);
             b.Property<string?>(x => x.Email).HasMaxLength(255);
             b.Property<string?>(x => x.Phone).HasMaxLength(32);
+            b.Property<bool>(x => x.IsWrittenOff);
+            b.Property<DateTimeOffset?>(x => x.WrittenOffAt);
+            b.Property<string?>(x => x.WrittenOffBy).HasMaxLength(180);
             b.HasKey(x => x.Id);
             b.HasIndex(x => x.RegistryNumber).IsUnique();
             b.ToTable("Citizens");

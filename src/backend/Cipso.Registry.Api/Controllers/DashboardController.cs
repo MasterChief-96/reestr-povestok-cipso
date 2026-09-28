@@ -26,7 +26,9 @@ public sealed class DashboardController(AppDbContext db) : ControllerBase
         var summonsQuery = db.Summonses.AsNoTracking();
 
         if (observer)
-            summonsQuery = summonsQuery.Where(x => x.Citizen.RegistryNumber == registryNumber);
+            summonsQuery = summonsQuery.Where(x =>
+                x.Citizen.RegistryNumber == registryNumber &&
+                !x.Citizen.IsWrittenOff);
 
         var statusCounts = await summonsQuery
             .GroupBy(x => x.Status)
@@ -74,8 +76,10 @@ public sealed class DashboardController(AppDbContext db) : ControllerBase
         };
 
         var citizens = observer
-            ? await db.Citizens.CountAsync(x => x.RegistryNumber == registryNumber)
-            : await db.Citizens.CountAsync();
+            ? await db.Citizens.CountAsync(x =>
+                x.RegistryNumber == registryNumber &&
+                !x.IsWrittenOff)
+            : await db.Citizens.CountAsync(x => !x.IsWrittenOff);
 
         var appeals = observer
             ? await db.Appeals.CountAsync(x => x.Summons.Citizen.RegistryNumber == registryNumber)

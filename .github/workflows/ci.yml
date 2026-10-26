@@ -29,6 +29,9 @@ jobs:
       - name: Install
         working-directory: src/frontend
         run: npm install
+      - name: Validation tests
+        working-directory: src/frontend
+        run: npm test
       - name: Build
         working-directory: src/frontend
         run: npm run build

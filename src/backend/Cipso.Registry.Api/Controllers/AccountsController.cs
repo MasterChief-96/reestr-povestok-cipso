@@ -4,6 +4,7 @@ using Cipso.Registry.Api.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Cipso.Registry.Api.Validation;
 
 namespace Cipso.Registry.Api.Controllers;
 
@@ -38,11 +39,11 @@ public sealed class AccountsController(AppDbContext db) : ControllerBase
     {
         var role = request.Role.Trim();
         if (!AllowedRoles.Contains(role))
-            return BadRequest(new { message = "Неизвестная роль учётной записи." });
+            return ValidationResponses.Field("role", "Выберите допустимую роль учётной записи.");
 
         var displayName = request.DisplayName.Trim();
         if (string.IsNullOrWhiteSpace(displayName))
-            return BadRequest(new { message = "Отображаемое имя обязательно." });
+            return ValidationResponses.Field("displayName", "Укажите ФИО или отображаемое имя.");
 
         await using var transaction = await db.Database.BeginTransactionAsync();
 
@@ -53,22 +54,19 @@ public sealed class AccountsController(AppDbContext db) : ControllerBase
         {
             if (request.Citizen is null)
             {
-                return BadRequest(new
-                {
-                    message = "Для роли «Призывник» необходимо заполнить карточку призывника."
-                });
+                return ValidationResponses.Field("citizen", "Заполните карточку призывника.");
             }
 
             registryNumber = request.Citizen.RegistryNumber.Trim();
 
             if (string.IsNullOrWhiteSpace(registryNumber))
-                return BadRequest(new { message = "Реестровый номер призывника обязателен." });
+                return ValidationResponses.Field("citizen.registryNumber", "Укажите реестровый номер призывника.");
 
             if (await db.Citizens.AnyAsync(x => x.RegistryNumber == registryNumber))
-                return Conflict(new { message = "Призывник с таким реестровым номером уже существует." });
+                return ValidationResponses.Field("citizen.registryNumber", "Призывник с таким реестровым номером уже существует.", 409);
 
             if (await db.SystemAccounts.AnyAsync(x => x.CitizenRegistryNumber == registryNumber))
-                return Conflict(new { message = "Для этого призывника уже существует учётная запись." });
+                return ValidationResponses.Field("citizen.registryNumber", "Для этого призывника уже существует учётная запись.", 409);
 
             citizen = new Citizen
             {

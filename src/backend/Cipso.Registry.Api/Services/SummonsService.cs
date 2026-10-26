@@ -2,6 +2,7 @@ using Cipso.Registry.Api.Contracts;
 using Cipso.Registry.Api.Data;
 using Cipso.Registry.Api.Domain;
 using Microsoft.EntityFrameworkCore;
+using Cipso.Registry.Api.Validation;
 
 namespace Cipso.Registry.Api.Services;
 
@@ -10,21 +11,24 @@ public sealed class SummonsService(AppDbContext db)
     public async Task<Summons> CreateAsync(CreateSummonsRequest request)
     {
         if (request.DueAt.Date < request.IssuedAt.ToDateTime(TimeOnly.MinValue).Date)
-            throw new ArgumentException("DueAt cannot be earlier than IssuedAt.");
+            throw new FieldValidationException("dueAt", "DueAt: срок явки не может быть раньше даты формирования.");
 
         if (await db.Summonses.AnyAsync(x => x.Number == request.Number))
-            throw new InvalidOperationException("Summons number already exists.");
+            throw new FieldValidationException("number", "Повестка с таким номером уже существует.", 409);
 
         var citizen = await db.Citizens.FindAsync(request.CitizenId)
-            ?? throw new KeyNotFoundException("Citizen not found.");
+            ?? throw new FieldValidationException("citizenId", "Выбранный призывник не найден.", 404);
 
         if (citizen.IsWrittenOff)
-            throw new InvalidOperationException("Нельзя выписать повестку списанному призывнику.");
+            throw new FieldValidationException("citizenId", "Нельзя выписать повестку списанному призывнику.", 409);
 
         var office = await db.AuthorityOffices.FindAsync(request.AuthorityOfficeId)
-            ?? throw new KeyNotFoundException("Authority office not found.");
+            ?? throw new FieldValidationException("authorityOfficeId", "Выбранный военкомат не найден.", 404);
         var employee = await db.Employees.FindAsync(request.CreatedByEmployeeId)
-            ?? throw new KeyNotFoundException("Employee not found.");
+            ?? throw new FieldValidationException("authorityOfficeId", "У выбранного военкомата нет секретаря.", 404);
+
+        if (employee.AuthorityOfficeId != office.Id)
+            throw new FieldValidationException("authorityOfficeId", "Секретарь не относится к выбранному военкомату.");
 
         var entity = new Summons
         {

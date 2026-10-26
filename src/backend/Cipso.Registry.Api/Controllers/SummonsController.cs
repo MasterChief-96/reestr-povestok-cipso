@@ -6,6 +6,7 @@ using Cipso.Registry.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Cipso.Registry.Api.Validation;
 
 namespace Cipso.Registry.Api.Controllers;
 
@@ -139,6 +140,10 @@ public sealed class SummonsController(AppDbContext db, SummonsService service) :
                 new { id = entity.Id },
                 new { entity.Id, entity.Number, entity.Status });
         }
+        catch (FieldValidationException ex)
+        {
+            return ValidationResponses.Field(ex.Field, ex.Message, ex.StatusCode);
+        }
         catch (ArgumentException ex)
         {
             return BadRequest(new { message = ex.Message });
@@ -202,7 +207,7 @@ public sealed class SummonsController(AppDbContext db, SummonsService service) :
             return NotFound();
 
         if (string.IsNullOrWhiteSpace(request.Text))
-            return BadRequest(new { message = "Appeal text is required." });
+            return ValidationResponses.Field("text", "Введите текст обращения.");
 
         var appeal = new Appeal
         {

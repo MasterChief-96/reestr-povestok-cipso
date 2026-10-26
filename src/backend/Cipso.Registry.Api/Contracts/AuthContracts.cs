@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Cipso.Registry.Api.Contracts;
 
 public sealed record ExternalAuthStubRequest(
-    [Required] string Provider,
+    [Required(ErrorMessage = "Выберите способ входа.")] string Provider,
     Guid AccountId);
 
 public sealed record ExternalAuthStubAccountResponse(
@@ -21,6 +21,6 @@ public sealed record LoginResponse(
     DateTimeOffset ExpiresAt);
 
 public sealed record CreateSystemAccountRequest(
-    [Required] string DisplayName,
-    [Required] string Role,
+    [Required(ErrorMessage = "Укажите ФИО или отображаемое имя.")] string DisplayName,
+    [Required(ErrorMessage = "Выберите роль пользователя.")] string Role,
     CreateCitizenRequest? Citizen);

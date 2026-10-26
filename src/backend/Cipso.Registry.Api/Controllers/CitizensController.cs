@@ -5,6 +5,7 @@ using Cipso.Registry.Api.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Cipso.Registry.Api.Validation;
 
 namespace Cipso.Registry.Api.Controllers;
 
@@ -53,7 +54,7 @@ public sealed class CitizensController(AppDbContext db) : ControllerBase
     public async Task<IActionResult> Create(CreateCitizenRequest request)
     {
         if (await db.Citizens.AnyAsync(x => x.RegistryNumber == request.RegistryNumber))
-            return Conflict(new { message = "Registry number already exists." });
+            return ValidationResponses.Field("registryNumber", "Призывник с таким реестровым номером уже существует.", 409);
 
         var citizen = new Citizen
         {

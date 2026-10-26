@@ -2,6 +2,10 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { createAccount, getAccounts, getCitizens, writeOffCitizen } from '../../../shared/api';
 import { roleLabels } from '../../../shared/constants';
 import type { Citizen, SystemAccount, UserRole } from '../../../shared/types';
+import { errorMessage, getApiFieldErrors } from '../../../shared/validation/errors';
+import type { FieldErrors } from '../../../shared/validation/errors';
+import { validateAccountInput } from '../../../shared/validation/validators';
+import { FieldError, fieldProps, focusFirstInvalid } from '../../../shared/ui/FieldError';
 
 const assignableRoles: UserRole[] = ['Operator', 'Manager', 'Observer', 'AutomationEngineer'];
 
@@ -28,6 +32,7 @@ export function AccountsPage() {
   const [role, setRole] = useState<UserRole>('Observer');
   const [conscript, setConscript] = useState(emptyConscript);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [busy, setBusy] = useState(false);
   const [writeOffBusy, setWriteOffBusy] = useState<string | null>(null);
 
@@ -58,10 +63,18 @@ export function AccountsPage() {
 
   function setField(field: keyof typeof emptyConscript, value: string) {
     setConscript(current => ({ ...current, [field]: value }));
+    setFieldErrors(current => ({ ...current, [field]: '' }));
   }
 
   async function submit(event: FormEvent) {
     event.preventDefault();
+    const problems = validateAccountInput(isConscript, displayName, conscript);
+    setFieldErrors(problems);
+    if (Object.keys(problems).length) {
+      setError('Исправьте отмеченные поля и повторите попытку.');
+      focusFirstInvalid(event.currentTarget, problems);
+      return;
+    }
     setBusy(true);
     setError('');
 
@@ -92,9 +105,14 @@ export function AccountsPage() {
 
       setDisplayName('');
       setConscript(emptyConscript);
+      setFieldErrors({});
       await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Не удалось создать учётную запись');
+      const problems = getApiFieldErrors(e);
+      setFieldErrors(problems);
+      setError(Object.keys(problems).length
+        ? 'Сервер обнаружил ошибки в отмеченных полях.'
+        : errorMessage(e, 'Не удалось создать учётную запись'));
     } finally {
       setBusy(false);
     }
@@ -145,78 +163,93 @@ export function AccountsPage() {
             </div>
           </div>
 
-          <form className="form-grid" onSubmit={submit}>
+          <form className="form-grid" onSubmit={submit} noValidate>
             <label className="full">
               Роль
-              <select value={role} onChange={e => setRole(e.target.value as UserRole)}>
+              <select {...fieldProps('role', fieldErrors)} value={role} onChange={e => { setRole(e.target.value as UserRole); setFieldErrors({}); setError(''); }}>
                 {assignableRoles.map(item => (
                   <option key={item} value={item}>{roleLabels[item]}</option>
                 ))}
               </select>
+              <FieldError name="role" errors={fieldErrors} />
             </label>
 
             {isConscript ? (
               <>
                 <label>
                   Фамилия
-                  <input required value={conscript.lastName} onChange={e => setField('lastName', e.target.value)} />
+                  <input {...fieldProps('lastName', fieldErrors)} required value={conscript.lastName} onChange={e => setField('lastName', e.target.value)} />
+                  <FieldError name="lastName" errors={fieldErrors} />
                 </label>
                 <label>
                   Имя
-                  <input required value={conscript.firstName} onChange={e => setField('firstName', e.target.value)} />
+                  <input {...fieldProps('firstName', fieldErrors)} required value={conscript.firstName} onChange={e => setField('firstName', e.target.value)} />
+                  <FieldError name="firstName" errors={fieldErrors} />
                 </label>
                 <label>
                   Отчество
-                  <input value={conscript.middleName} onChange={e => setField('middleName', e.target.value)} />
+                  <input {...fieldProps('middleName', fieldErrors)} value={conscript.middleName} onChange={e => setField('middleName', e.target.value)} />
+                  <FieldError name="middleName" errors={fieldErrors} />
                 </label>
                 <label>
                   Реестровый номер
-                  <input required value={conscript.registryNumber} onChange={e => setField('registryNumber', e.target.value)} placeholder="например, TEST-0013" />
+                  <input {...fieldProps('registryNumber', fieldErrors)} required value={conscript.registryNumber} onChange={e => setField('registryNumber', e.target.value)} placeholder="например, TEST-0013" />
+                  <FieldError name="registryNumber" errors={fieldErrors} />
                 </label>
                 <label>
                   Дата рождения
-                  <input type="date" required value={conscript.birthDate} onChange={e => setField('birthDate', e.target.value)} />
+                  <input {...fieldProps('birthDate', fieldErrors)} type="date" required value={conscript.birthDate} onChange={e => setField('birthDate', e.target.value)} />
+                  <FieldError name="birthDate" errors={fieldErrors} />
                 </label>
                 <label>
                   Телефон
-                  <input value={conscript.phone} onChange={e => setField('phone', e.target.value)} />
+                  <input {...fieldProps('phone', fieldErrors)} value={conscript.phone} onChange={e => setField('phone', e.target.value)} />
+                  <FieldError name="phone" errors={fieldErrors} />
                 </label>
                 <label className="full">
                   E-mail
-                  <input type="email" value={conscript.email} onChange={e => setField('email', e.target.value)} />
+                  <input {...fieldProps('email', fieldErrors)} type="email" value={conscript.email} onChange={e => setField('email', e.target.value)} />
+                  <FieldError name="email" errors={fieldErrors} />
                 </label>
 
                 <div className="full form-subtitle">Адрес регистрации</div>
 
                 <label>
                   Индекс
-                  <input required value={conscript.postalCode} onChange={e => setField('postalCode', e.target.value)} />
+                  <input {...fieldProps('postalCode', fieldErrors)} required value={conscript.postalCode} onChange={e => setField('postalCode', e.target.value)} />
+                  <FieldError name="postalCode" errors={fieldErrors} />
                 </label>
                 <label>
                   Регион
-                  <input required value={conscript.region} onChange={e => setField('region', e.target.value)} />
+                  <input {...fieldProps('region', fieldErrors)} required value={conscript.region} onChange={e => setField('region', e.target.value)} />
+                  <FieldError name="region" errors={fieldErrors} />
                 </label>
                 <label>
                   Город
-                  <input required value={conscript.city} onChange={e => setField('city', e.target.value)} />
+                  <input {...fieldProps('city', fieldErrors)} required value={conscript.city} onChange={e => setField('city', e.target.value)} />
+                  <FieldError name="city" errors={fieldErrors} />
                 </label>
                 <label>
                   Улица
-                  <input required value={conscript.street} onChange={e => setField('street', e.target.value)} />
+                  <input {...fieldProps('street', fieldErrors)} required value={conscript.street} onChange={e => setField('street', e.target.value)} />
+                  <FieldError name="street" errors={fieldErrors} />
                 </label>
                 <label>
                   Дом
-                  <input required value={conscript.building} onChange={e => setField('building', e.target.value)} />
+                  <input {...fieldProps('building', fieldErrors)} required value={conscript.building} onChange={e => setField('building', e.target.value)} />
+                  <FieldError name="building" errors={fieldErrors} />
                 </label>
                 <label>
                   Квартира
-                  <input value={conscript.apartment} onChange={e => setField('apartment', e.target.value)} />
+                  <input {...fieldProps('apartment', fieldErrors)} value={conscript.apartment} onChange={e => setField('apartment', e.target.value)} />
+                  <FieldError name="apartment" errors={fieldErrors} />
                 </label>
               </>
             ) : (
               <label className="full">
                 Отображаемое имя / ФИО
-                <input required value={displayName} onChange={e => setDisplayName(e.target.value)} />
+                <input {...fieldProps('displayName', fieldErrors)} required value={displayName} onChange={e => { setDisplayName(e.target.value); setFieldErrors(current => ({ ...current, displayName: '' })); }} />
+                <FieldError name="displayName" errors={fieldErrors} />
               </label>
             )}
 

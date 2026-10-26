@@ -1,0 +1,91 @@
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #eef2f7 0%, #f8f9fb 55%, #e8edf4 100%);
+}
+.login-card {
+  width: min(460px, 100%);
+  background: white;
+  border: 1px solid #dfe5ed;
+  border-radius: 18px;
+  padding: 30px;
+  box-shadow: 0 20px 60px rgba(33, 48, 72, .12);
+}
+.login-card h1 { margin: 12px 0; font-size: 28px; }
+.login-form { display: grid; gap: 14px; margin-top: 24px; }
+.login-form label, .form-grid label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #536075;
+}
+.demo-credentials {
+  margin-top: 20px;
+  background: #f6f8fa;
+  border-radius: 10px;
+  padding: 14px;
+  display: grid;
+  gap: 4px;
+  color: #657186;
+  font-size: 12px;
+}
+.demo-credentials strong { color: #33415a; margin-bottom: 3px; }
+
+.form-panel { max-width: 850px; }
+.form-grid {
+  padding: 22px 24px 26px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.form-grid .full { grid-column: 1 / -1; }
+.form-grid textarea { resize: vertical; }
+.form-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.access-panel { padding: 28px; max-width: 620px; }
+
+.detail-page { padding: 24px; }
+.detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.detail-grid > div {
+  background: #f8fafc;
+  border: 1px solid #e8ecf1;
+  border-radius: 10px;
+  padding: 13px;
+}
+.detail-grid > div > span:first-child {
+  display: block;
+  color: #788499;
+  font-size: 11px;
+  text-transform: uppercase;
+  margin-bottom: 7px;
+}
+.detail-section { margin-top: 24px; padding-top: 20px; border-top: 1px solid #e8ecf1; }
+.detail-section p { margin-bottom: 8px; }
+.detail-columns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.detail-columns > div { background: #f8fafc; border-radius: 10px; padding: 14px; }
+.metric { font-size: 26px; }
+
+.timeline { display: grid; gap: 12px; }
+.timeline-item { display: grid; grid-template-columns: 18px 1fr; gap: 8px; }
+.timeline-dot {
+  width: 10px;
+  height: 10px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: #526988;
+  box-shadow: 0 0 0 4px #eef2f7;
+}
+.timeline-item p { color: #657186; font-size: 13px; margin: 5px 0 0; }
+
+.cards-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.mini-card {
+  display: grid;
+  gap: 5px;
+  background: #f8fafc;
+  border: 1px solid #e8ecf1;
+  border-radius: 10px;
+  padding: 13px;
+}
+.mini-card span, .mini-card small { color: #6e7a8e; font-size: 12px; }

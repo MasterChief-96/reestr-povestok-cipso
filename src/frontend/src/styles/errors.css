@@ -1,0 +1,3 @@
+.field-error { display: block; margin-top: 2px; color: #a52c2c; font-size: 12px; font-weight: 500; line-height: 1.4; }
+.form-grid input[aria-invalid="true"], .form-grid select[aria-invalid="true"], .form-grid textarea[aria-invalid="true"] { border-color: #c33b3b; background: #fffafa; }
+.form-grid input[aria-invalid="true"]:focus, .form-grid select[aria-invalid="true"]:focus, .form-grid textarea[aria-invalid="true"]:focus { outline: 2px solid #c33b3b; outline-offset: 1px; }

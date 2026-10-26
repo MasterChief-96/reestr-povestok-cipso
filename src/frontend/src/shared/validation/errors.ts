@@ -13,9 +13,12 @@ export function normalizeApiErrors(raw: unknown): FieldErrors {
 }
 
 export class ApiError extends Error {
-  constructor(message: string, readonly fieldErrors: FieldErrors = {}) {
+  readonly fieldErrors: FieldErrors;
+
+  constructor(message: string, fieldErrors: FieldErrors = {}) {
     super(message);
     this.name = 'ApiError';
+    this.fieldErrors = fieldErrors;
   }
 }
 export function getApiFieldErrors(error: unknown): FieldErrors {

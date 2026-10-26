@@ -66,7 +66,7 @@ export function AccountsPage() {
     setFieldErrors(current => ({ ...current, [field]: '' }));
   }
 
-  async function submit(event: FormEvent) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const problems = validateAccountInput(isConscript, displayName, conscript);
     setFieldErrors(problems);

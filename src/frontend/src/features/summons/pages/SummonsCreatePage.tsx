@@ -51,7 +51,7 @@ export function SummonsCreatePage({ session }: { session: Session }) {
   const office = offices.find(x => x.id === officeId);
   const employee = office?.employees[0];
 
-  async function submit(event: FormEvent) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const problems = validateSummonsInput({
       number, citizenId, officeId, issuedAt, dueAt, reason, comment, hasEmployee: Boolean(employee)

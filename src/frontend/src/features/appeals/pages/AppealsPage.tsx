@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getAppeals } from '../api';
-import { StatusBadge } from '../components/StatusBadge';
-import type { AppealListItem } from '../types';
+import { getAppeals } from '../../../shared/api';
+import { StatusBadge } from '../../../shared/ui/StatusBadge';
+import type { AppealListItem } from '../../../shared/types';
 
 export function AppealsPage() {
   const [items, setItems] = useState<AppealListItem[]>([]);

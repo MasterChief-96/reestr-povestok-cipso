@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getDashboard } from '../api';
-import { StatusBadge } from '../components/StatusBadge';
-import { statusLabels } from '../constants';
-import type { DashboardSummary, Session, SummonsStatus } from '../types';
+import { getDashboard } from '../../../shared/api';
+import { StatusBadge } from '../../../shared/ui/StatusBadge';
+import { statusLabels } from '../../../shared/constants';
+import type { DashboardSummary, Session, SummonsStatus } from '../../../shared/types';
 
 export function DashboardPage({ session }: { session: Session }) {
   const [data, setData] = useState<DashboardSummary | null>(null);

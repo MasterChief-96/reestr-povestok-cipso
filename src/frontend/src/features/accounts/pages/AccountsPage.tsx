@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { createAccount, getAccounts, getCitizens, writeOffCitizen } from '../api';
-import { roleLabels } from '../constants';
-import type { Citizen, SystemAccount, UserRole } from '../types';
+import { createAccount, getAccounts, getCitizens, writeOffCitizen } from '../../../shared/api';
+import { roleLabels } from '../../../shared/constants';
+import type { Citizen, SystemAccount, UserRole } from '../../../shared/types';
 
 const assignableRoles: UserRole[] = ['Operator', 'Manager', 'Observer', 'AutomationEngineer'];
 

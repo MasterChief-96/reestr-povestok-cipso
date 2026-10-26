@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { externalStubLogin, getStubAccounts, SESSION_KEY } from '../api';
-import { roleLabels } from '../constants';
-import type { AuthProvider, Session, StubAccount } from '../types';
+import { externalStubLogin, getStubAccounts, SESSION_KEY } from '../../../shared/api';
+import { roleLabels } from '../../../shared/constants';
+import type { AuthProvider, Session, StubAccount } from '../../../shared/types';
 
 export function LoginPage({ onLogin }: { onLogin: (session: Session) => void }) {
   const navigate = useNavigate();

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { getCitizens, writeOffCitizen } from '../api';
-import type { Citizen, Session } from '../types';
+import { getCitizens, writeOffCitizen } from '../../../shared/api';
+import type { Citizen, Session } from '../../../shared/types';
 
 export function CitizensPage({ session }: { session: Session }) {
   const [citizens, setCitizens] = useState<Citizen[]>([]);

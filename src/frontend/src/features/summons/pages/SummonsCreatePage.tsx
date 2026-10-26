@@ -2,6 +2,10 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createSummons, getCitizens, getOffices } from '../../../shared/api';
 import type { Citizen, Office, Session } from '../../../shared/types';
+import { errorMessage, getApiFieldErrors } from '../../../shared/validation/errors';
+import type { FieldErrors } from '../../../shared/validation/errors';
+import { validateSummonsInput } from '../../../shared/validation/validators';
+import { FieldError, fieldProps, focusFirstInvalid } from '../../../shared/ui/FieldError';
 
 export function SummonsCreatePage({ session }: { session: Session }) {
   const navigate = useNavigate();
@@ -11,6 +15,7 @@ export function SummonsCreatePage({ session }: { session: Session }) {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const [number, setNumber] = useState(`CIPSO-2026-${String(Date.now()).slice(-6)}`);
@@ -48,11 +53,16 @@ export function SummonsCreatePage({ session }: { session: Session }) {
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-
-    if (!employee) {
-      setError('У выбранного военкомата нет секретаря для создания записи.');
+    const problems = validateSummonsInput({
+      number, citizenId, officeId, issuedAt, dueAt, reason, comment, hasEmployee: Boolean(employee)
+    });
+    setFieldErrors(problems);
+    if (Object.keys(problems).length) {
+      setError('Исправьте отмеченные поля и повторите попытку.');
+      focusFirstInvalid(event.currentTarget, problems);
       return;
     }
+    if (!employee) return;
 
     setBusy(true);
     setError('');
@@ -70,7 +80,11 @@ export function SummonsCreatePage({ session }: { session: Session }) {
       });
       navigate(`/summons/${created.id}`, { replace: true });
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Не удалось создать повестку');
+      const problems = getApiFieldErrors(e);
+      setFieldErrors(problems);
+      setError(Object.keys(problems).length
+        ? 'Сервер обнаружил ошибки в отмеченных полях.'
+        : errorMessage(e, 'Не удалось создать повестку'));
     } finally {
       setBusy(false);
     }
@@ -90,60 +104,67 @@ export function SummonsCreatePage({ session }: { session: Session }) {
         {loading ? (
           <div className="state">Загрузка справочников…</div>
         ) : (
-          <form className="form-grid" onSubmit={submit}>
+          <form className="form-grid" onSubmit={submit} noValidate>
             <label className="full">
               Номер
-              <input required value={number} onChange={e => setNumber(e.target.value)} />
+              <input {...fieldProps('number', fieldErrors)} required value={number} onChange={e => setNumber(e.target.value)} />
+              <FieldError name="number" errors={fieldErrors} />
             </label>
 
             <label>
               Призывник
-              <select required value={citizenId} onChange={e => setCitizenId(e.target.value)}>
+              <select {...fieldProps('citizenId', fieldErrors)} required value={citizenId} onChange={e => setCitizenId(e.target.value)}>
                 {citizens.map(citizen => (
                   <option key={citizen.id} value={citizen.id}>
                     {citizen.lastName} {citizen.firstName} · {citizen.registryNumber}
                   </option>
                 ))}
               </select>
+              <FieldError name="citizenId" errors={fieldErrors} />
             </label>
 
             <label>
               Военкомат
-              <select required value={officeId} onChange={e => setOfficeId(e.target.value)}>
+              <select {...fieldProps('officeId', fieldErrors)} required value={officeId} onChange={e => setOfficeId(e.target.value)}>
                 {offices.map(item => (
                   <option key={item.id} value={item.id}>{item.name}</option>
                 ))}
               </select>
+              <FieldError name="officeId" errors={fieldErrors} />
             </label>
 
             <label>
               Дата формирования
-              <input
+              <input {...fieldProps('issuedAt', fieldErrors)}
                 type="date"
                 required
                 value={issuedAt}
                 onChange={e => setIssuedAt(e.target.value)}
               />
+              <FieldError name="issuedAt" errors={fieldErrors} />
             </label>
 
             <label>
               Срок явки
-              <input
+              <input {...fieldProps('dueAt', fieldErrors)}
                 type="datetime-local"
                 required
                 value={dueAt}
                 onChange={e => setDueAt(e.target.value)}
               />
+              <FieldError name="dueAt" errors={fieldErrors} />
             </label>
 
             <label className="full">
               Основание / причина явки
-              <textarea required rows={4} value={reason} onChange={e => setReason(e.target.value)} />
+              <textarea {...fieldProps('reason', fieldErrors)} required rows={4} value={reason} onChange={e => setReason(e.target.value)} />
+              <FieldError name="reason" errors={fieldErrors} />
             </label>
 
             <label className="full">
               Комментарий
-              <textarea rows={3} value={comment} onChange={e => setComment(e.target.value)} />
+              <textarea {...fieldProps('comment', fieldErrors)} rows={3} value={comment} onChange={e => setComment(e.target.value)} />
+              <FieldError name="comment" errors={fieldErrors} />
             </label>
 
             {error && <div className="error compact full">{error}</div>}

@@ -258,7 +258,7 @@ export function AccountsPage() {
             <div className="form-actions full">
               <button
                 className="primary"
-                disabled={busy || (isConscript && !conscriptDisplayName)}
+                disabled={busy}
               >
                 {busy ? 'Создание…' : isConscript ? 'Создать призывника' : 'Создать учётную запись'}
               </button>

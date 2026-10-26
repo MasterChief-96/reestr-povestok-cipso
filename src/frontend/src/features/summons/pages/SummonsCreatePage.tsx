@@ -107,13 +107,13 @@ export function SummonsCreatePage({ session }: { session: Session }) {
           <form className="form-grid" onSubmit={submit} noValidate>
             <label className="full">
               Номер
-              <input {...fieldProps('number', fieldErrors)} required value={number} onChange={e => setNumber(e.target.value)} />
+              <input {...fieldProps('number', fieldErrors)} required value={number} onChange={e => { setNumber(e.target.value); setFieldErrors(current => ({ ...current, number: '' })); }} />
               <FieldError name="number" errors={fieldErrors} />
             </label>
 
             <label>
               Призывник
-              <select {...fieldProps('citizenId', fieldErrors)} required value={citizenId} onChange={e => setCitizenId(e.target.value)}>
+              <select {...fieldProps('citizenId', fieldErrors)} required value={citizenId} onChange={e => { setCitizenId(e.target.value); setFieldErrors(current => ({ ...current, citizenId: '' })); }}>
                 {citizens.map(citizen => (
                   <option key={citizen.id} value={citizen.id}>
                     {citizen.lastName} {citizen.firstName} · {citizen.registryNumber}
@@ -125,7 +125,7 @@ export function SummonsCreatePage({ session }: { session: Session }) {
 
             <label>
               Военкомат
-              <select {...fieldProps('officeId', fieldErrors)} required value={officeId} onChange={e => setOfficeId(e.target.value)}>
+              <select {...fieldProps('officeId', fieldErrors)} required value={officeId} onChange={e => { setOfficeId(e.target.value); setFieldErrors(current => ({ ...current, officeId: '' })); }}>
                 {offices.map(item => (
                   <option key={item.id} value={item.id}>{item.name}</option>
                 ))}
@@ -139,7 +139,7 @@ export function SummonsCreatePage({ session }: { session: Session }) {
                 type="date"
                 required
                 value={issuedAt}
-                onChange={e => setIssuedAt(e.target.value)}
+                onChange={e => { setIssuedAt(e.target.value); setFieldErrors(current => ({ ...current, issuedAt: '' })); }}
               />
               <FieldError name="issuedAt" errors={fieldErrors} />
             </label>
@@ -150,20 +150,20 @@ export function SummonsCreatePage({ session }: { session: Session }) {
                 type="datetime-local"
                 required
                 value={dueAt}
-                onChange={e => setDueAt(e.target.value)}
+                onChange={e => { setDueAt(e.target.value); setFieldErrors(current => ({ ...current, dueAt: '' })); }}
               />
               <FieldError name="dueAt" errors={fieldErrors} />
             </label>
 
             <label className="full">
               Основание / причина явки
-              <textarea {...fieldProps('reason', fieldErrors)} required rows={4} value={reason} onChange={e => setReason(e.target.value)} />
+              <textarea {...fieldProps('reason', fieldErrors)} required rows={4} value={reason} onChange={e => { setReason(e.target.value); setFieldErrors(current => ({ ...current, reason: '' })); }} />
               <FieldError name="reason" errors={fieldErrors} />
             </label>
 
             <label className="full">
               Комментарий
-              <textarea {...fieldProps('comment', fieldErrors)} rows={3} value={comment} onChange={e => setComment(e.target.value)} />
+              <textarea {...fieldProps('comment', fieldErrors)} rows={3} value={comment} onChange={e => { setComment(e.target.value); setFieldErrors(current => ({ ...current, comment: '' })); }} />
               <FieldError name="comment" errors={fieldErrors} />
             </label>
 
@@ -171,7 +171,7 @@ export function SummonsCreatePage({ session }: { session: Session }) {
 
             <div className="form-actions full">
               <Link className="secondary button-link" to="/summons">Отмена</Link>
-              <button className="primary" disabled={busy || !citizenId || !officeId}>
+              <button className="primary" disabled={busy}>
                 {busy ? 'Создание…' : 'Создать повестку'}
               </button>
             </div>

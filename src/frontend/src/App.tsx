@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { readSession, SESSION_KEY } from './api';
-import { Layout } from './components/Layout';
-import { AccountsPage } from './pages/AccountsPage';
-import { AppealsPage } from './pages/AppealsPage';
-import { CitizensPage } from './pages/CitizensPage';
-import { DashboardPage } from './pages/DashboardPage';
-import { DocumentsPage } from './pages/DocumentsPage';
-import { LoginPage } from './pages/LoginPage';
-import { SummonsCreatePage } from './pages/SummonsCreatePage';
-import { SummonsDetailPage } from './pages/SummonsDetailPage';
-import { SummonsListPage } from './pages/SummonsListPage';
-import type { Session } from './types';
+import { readSession, SESSION_KEY } from './shared/api';
+import { Layout } from './shared/layout/Layout';
+import { AccountsPage } from './features/accounts/pages/AccountsPage';
+import { AppealsPage } from './features/appeals/pages/AppealsPage';
+import { CitizensPage } from './features/citizens/pages/CitizensPage';
+import { DashboardPage } from './features/dashboard/pages/DashboardPage';
+import { DocumentsPage } from './features/documents/pages/DocumentsPage';
+import { LoginPage } from './features/auth/pages/LoginPage';
+import { SummonsCreatePage } from './features/summons/pages/SummonsCreatePage';
+import { SummonsDetailPage } from './features/summons/pages/SummonsDetailPage';
+import { SummonsListPage } from './features/summons/pages/SummonsListPage';
+import type { Session } from './shared/types';
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(() => readSession());

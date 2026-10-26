@@ -2,6 +2,7 @@ using Cipso.Registry.Api.Contracts;
 using Cipso.Registry.Api.Data;
 using Cipso.Registry.Api.Domain;
 using Cipso.Registry.Api.Services;
+using Cipso.Registry.Api.Validation;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -25,8 +26,9 @@ public sealed class SummonsServiceTests
             "Test",
             null);
 
-        var error = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateAsync(request));
-        Assert.Contains("DueAt", error.Message);
+        var error = await Assert.ThrowsAsync<FieldValidationException>(() => service.CreateAsync(request));
+        Assert.Equal("dueAt", error.Field);
+        Assert.Contains("срок явки", error.Message);
     }
 
     [Fact]

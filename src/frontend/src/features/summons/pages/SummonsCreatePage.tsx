@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { createSummons, getCitizens, getOffices } from '../api';
-import type { Citizen, Office, Session } from '../types';
+import { createSummons, getCitizens, getOffices } from '../../../shared/api';
+import type { Citizen, Office, Session } from '../../../shared/types';
 
 export function SummonsCreatePage({ session }: { session: Session }) {
   const navigate = useNavigate();

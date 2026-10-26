@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getSummonsById } from '../api';
-import { StatusBadge } from '../components/StatusBadge';
-import { statusLabels } from '../constants';
-import type { Session, SummonsDetail } from '../types';
+import { getSummonsById } from '../../../shared/api';
+import { StatusBadge } from '../../../shared/ui/StatusBadge';
+import { statusLabels } from '../../../shared/constants';
+import type { Session, SummonsDetail } from '../../../shared/types';
 
 export function SummonsDetailPage({ session }: { session: Session }) {
   const { id } = useParams();

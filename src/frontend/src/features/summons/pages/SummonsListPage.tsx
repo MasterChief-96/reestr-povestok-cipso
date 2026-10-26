@@ -1,15 +1,15 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getOffices, getSummons } from '../api';
-import { StatusBadge } from '../components/StatusBadge';
-import { statusLabels, statuses } from '../constants';
+import { getOffices, getSummons } from '../../../shared/api';
+import { StatusBadge } from '../../../shared/ui/StatusBadge';
+import { statusLabels, statuses } from '../../../shared/constants';
 import type {
   Office,
   PagedSummons,
   Session,
   SummonsFilters,
   SummonsStatus
-} from '../types';
+} from '../../../shared/types';
 
 const emptyPage: PagedSummons = {
   items: [],

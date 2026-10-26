@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getDocuments } from '../api';
-import { StatusBadge } from '../components/StatusBadge';
-import type { DocumentListItem } from '../types';
+import { getDocuments } from '../../../shared/api';
+import { StatusBadge } from '../../../shared/ui/StatusBadge';
+import type { DocumentListItem } from '../../../shared/types';
 
 export function DocumentsPage() {
   const [items, setItems] = useState<DocumentListItem[]>([]);
